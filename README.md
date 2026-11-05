@@ -1,29 +1,31 @@
 # 찌멍 · 찜멍
 
-말 걸지 않아도 되는, 그냥 멍하니 머물다 가는 3D 웹 공간 두 곳.
-서버에 올리면 **같은 공간을 여러 명이 함께** 걸어 다녀요 (채팅 없음). 파일을 그냥 열면 혼자 걷기만 돼요.
+말 걸지 않아도 되는, 그냥 멍하니 머물다 가는 3D 웹 공간 두 곳. 각각 따로 배포돼요.
+같은 공간을 **여러 명이 함께** 걸어 다녀요 (채팅 없음). 파일을 그냥 열면 혼자 걷기만 돼요.
 
-| 사이트 | 파일 | 한 줄 소개 |
+| 사이트 | 주소 | 파일 |
 |---|---|---|
-| 🎣 **찌멍 · 새벽 저수지** | `public/fishing/index.html?place=lake` | 좌대에 앉아 찌를 바라보다 찌올림에 챔질 |
-| 🎣 **찌멍 · 얼음 호수** | `public/fishing/index.html?place=ice` | 얼음 구멍에 줄을 내리고 빙어 낚기 |
-| ♨ **찜멍 · 동네 찜질방** | `public/jjimjilbang/index.html` | 불가마 땀 빼기, 이마로 계란 깨기, 식혜, 얼음방 |
+| 🎣 **찌멍** (저수지·얼음 호수 낚시) | https://jjimeong.tjdwns2121.workers.dev (`?place=ice` 얼음 호수) | `sites/jjimeong/index.html` |
+| ♨ **찜멍** (동네 찜질방) | https://jjimmung.tjdwns2121.workers.dev | `sites/jjimmung/index.html` |
 
-`public/index.html`은 세 곳으로 가는 입구 페이지입니다.
+친구끼리만 만나려면 주소 끝에 `room=이름`을 붙여요. 예: `https://jjimeong.tjdwns2121.workers.dev/?place=lake&room=우리방`
 
 ## 실행 · 배포
 
 ```bash
 npm install
-npm run dev      # http://localhost:8787  (브라우저 창 두 개로 열면 서로 보여요)
-npm run deploy   # Cloudflare에 올리기 → https://jjimeong.tjdwns2121.workers.dev
+npm run dev:fish      # 찌멍  http://localhost:8787
+npm run dev:jjim      # 찜멍  http://localhost:8788
+npm run deploy        # 둘 다 Cloudflare에 올리기 (deploy:fish / deploy:jjim 따로도 가능)
 ```
 
-- 구조: Worker 하나(`src/index.js`)가 화면 파일(`public/`)과 실시간 연결(`/ws`)을 함께 맡아요.
+- 서버 코드는 하나(`server/index.js`), 설정은 사이트별(`wrangler.jjimeong.jsonc`, `wrangler.jjimmung.jsonc`).
+  Worker 하나가 그 사이트의 화면 파일과 실시간 연결(`/ws`)을 함께 맡아요.
 - 방 하나 = Durable Object 하나 (SQLite 기반, WebSocket Hibernation API → 무료 플랜).
   장소별로 방이 따로예요(`lake` / `ice` / `jjim`). 한 방 30명이 차면 다음 방으로 자동 배정.
-- 주소 끝에 `?room=이름`을 붙이면 친구끼리만 그 방에서 만나요. 예: `/fishing/?place=lake&room=우리동네`
+- 예전 주소(`jjimeong…/fishing/`, `jjimeong…/jjimjilbang/`)는 새 주소로 자동 이동해요.
 - 연결이 끊기면 몇 초 뒤 자동 재연결, 그동안에도 혼자 걷기는 그대로.
+- 무료 한도는 **Cloudflare 계정 단위**라서 두 사이트가 같은 하루치(요청 10만 건)를 나눠 써요.
 
 ### 무료 한도 아끼기 (Cloudflare 무료 플랜)
 - 화면 파일(HTML·이미지)은 무료·무제한 → 사람이 아무리 많이 와도 사이트는 안 꺼져요.

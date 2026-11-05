@@ -18,6 +18,7 @@ export default {
     // 예전 주소(하나로 합쳐져 있던 시절) → 새 주소로 안내
     if (url.pathname.startsWith('/fishing')) return Response.redirect(new URL('/' + url.search, url), 301);
     if (url.pathname.startsWith('/jjimjilbang') && env.JJIM_URL) return Response.redirect(env.JJIM_URL, 301);
+    if (url.pathname === '/board') return board(request, env, url);
     if (url.pathname !== '/ws') return env.ASSETS.fetch(request);
     if (request.headers.get('Upgrade') !== 'websocket') return new Response('WebSocket 전용 주소예요', { status: 426 });
 
@@ -44,6 +45,57 @@ export default {
 };
 
 const roomStub = (env, name) => env.ROOMS.get(env.ROOMS.idFromName(name));
+
+/* ---------------- 오늘의 랭킹 (/board) ----------------
+   GET  /board?site=lake&kind=big&id=<내 id>          → { date, kind, top:[{n,v,x}], me:{rank,v}|null }
+   POST /board  {site, kind, id, name, v, x}           → 같은 형식 (내 기록이 더 좋을 때만 갱신)
+   - 한국 시간 하루 단위(자정 초기화). 종류마다 Durable Object 하나(site:kind:날짜).
+   - 무료 한도 절약: 클라이언트는 개인 최고를 넘었을 때만 POST, 랭킹 창을 열 때만 GET.
+   - 점수는 클라이언트가 보내는 값이라 완벽히 막을 수는 없어요. 범위·횟수만 제한해요. */
+const BOARD_KINDS = {
+  lake: { big: [1, 200], count: [1, 500] },        // 오늘 가장 큰 물고기(cm, x=어종) · 오늘 낚은 마릿수
+  ice:  { big: [1, 200], smelt: [1, 2000] },       // 가장 큰 물고기 · 빙어 마릿수
+  jjim: { char: [1, 3600], sweat: [1, 86400], egg: [1, 1000] }, // 숯가마 버티기(초) · 오늘 땀(초) · 계란
+};
+const kstDate = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+async function board(request, env, url) {
+  const sites = String(env.SITES || 'lake').split(',');
+  let q;
+  if (request.method === 'POST') { try { q = await request.json(); } catch { return json({ error: 'bad json' }, 400); } }
+  else if (request.method === 'GET') q = Object.fromEntries(url.searchParams);
+  else return json({ error: 'method' }, 405);
+  const site = sites.includes(q.site) ? q.site : null, kinds = site && BOARD_KINDS[site];
+  if (!kinds || !kinds[q.kind]) return json({ error: 'unknown board' }, 400);
+  const date = kstDate();
+  const stub = env.BOARDS.get(env.BOARDS.idFromName(`${site}:${q.kind}:${date}`));
+  return stub.fetch(new Request('https://board/', { method: 'POST', body: JSON.stringify({ ...q, op: request.method === 'POST' ? 'put' : 'get', range: kinds[q.kind], date }) }));
+}
+
+export class Board extends DurableObject {
+  async fetch(request) {
+    const q = await request.json();
+    const id = /^[a-z0-9]{8,32}$/i.test(String(q.id || '')) ? String(q.id) : null;
+    let e = (await this.ctx.storage.get('e')) || {};
+    if (q.op === 'put') {
+      const v = Number(q.v), [lo, hi] = q.range;
+      if (!id || !Number.isFinite(v) || v < lo || v > hi) return json({ error: 'bad value' }, 400);
+      const cur = e[id], now = Date.now();
+      if (cur && now - cur.t < 3000) return json({ error: 'slow down' }, 429);
+      if (!cur || v > cur.v) {
+        e[id] = { n: cleanName(q.name), v: Math.round(v * 10) / 10, x: String(q.x || '').normalize('NFC').replace(/[\u0000-\u001f<>]/g, '').slice(0, 16), t: now };
+        // 너무 커지지 않게 상위 300명만 보관
+        const keys = Object.keys(e);
+        if (keys.length > 300) { keys.sort((a, b) => e[b].v - e[a].v).slice(300).forEach(k => delete e[k]); }
+        await this.ctx.storage.put('e', e);
+      } else if (cur) { cur.t = now; }
+    }
+    const all = Object.entries(e).sort((a, b) => b[1].v - a[1].v || a[1].t - b[1].t);
+    const top = all.slice(0, 10).map(([, r]) => ({ n: r.n, v: r.v, x: r.x }));
+    const i = id ? all.findIndex(([k]) => k === id) : -1;
+    return json({ date: q.date, kind: q.kind, top, me: i >= 0 ? { rank: i + 1, v: all[i][1].v } : null, total: all.length });
+  }
+}
 function withRoom(request, room) {
   const u = new URL(request.url);
   u.searchParams.set('roomName', room);

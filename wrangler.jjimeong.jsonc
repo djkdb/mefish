@@ -5,8 +5,8 @@
   "main": "server/index.js",
   "compatibility_date": "2025-09-01",
   "assets": { "directory": "./sites/jjimeong", "binding": "ASSETS" },
-  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }, { "name": "BOARDS", "class_name": "Board" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }, { "tag": "v2", "new_sqlite_classes": ["Board"] }],
   "vars": {
     "SITES": "lake,ice",
     "JJIM_URL": "https://jjimmung.tjdwns2121.workers.dev/"

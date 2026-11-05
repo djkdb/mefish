@@ -281,7 +281,7 @@ const PLACES = {
           npcTalk: ['붕어 한 마리~', '오늘 손맛 좋네', '아… 놓쳤다', '찌올림 봤어요?'] },
   ice:  { title: '얼음 호수', spotWord: '구멍', ice: true, wait: [5, 20], rushWait: [3, 9],
           rodLen: 1.0, rodPitch: 1.15, bobScale: 0.95, castArc: 0.25,
-          camFish: { back: 2.5, up: 2.4, side: 1.7, look: 0.95 },
+          camFish: { back: 1.2, up: 2.6, side: 2.6, look: 0.95 },
           other: { id: 'lake', label: '🌅 저수지 가기' },
           greet: ['어서 와요~', '손 시리죠?', '여기 빙어 잘 나와요', '호떡 먹고 왔어요'],
           npcTalk: ['빙어 또 잡았다!', '손 시려…', '오늘 입질 좋네', '아… 놓쳤다'] },
@@ -2534,7 +2534,7 @@ function updateCamera(dt) {
   } else {
     const s = F.spot, c = PL.camFish, d = s.dir, px = -d.y, pz = d.x, kf = camFit.kf;
     if (s.camSide === undefined) s.camSide = pickCamSide(s);
-    _cam.set(s.seat.x - d.x * c.back * kf + px * s.camSide, s.seat.y + c.up * (1 + (kf - 1) * 0.6), s.seat.z - d.y * c.back * kf + pz * s.camSide);
+    _cam.set(s.seat.x - d.x * c.back * kf + px * s.camSide * kf, s.seat.y + c.up * (1 + (kf - 1) * 0.6), s.seat.z - d.y * c.back * kf + pz * s.camSide * kf);
     ox = s.seat.x; oy = s.seat.y + 1.5; oz = s.seat.z;
     const target = F.state === 'reeling' || F.state === 'caught' || F.state === 'fight' ? F.hook : s.bob;
     lx = lerp(s.seat.x, target.x, c.look); ly = lerp(s.seat.y + 1.1, s.waterY + 0.25, c.look); lz = lerp(s.seat.z, target.z, c.look);

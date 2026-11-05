@@ -2723,7 +2723,7 @@ window.__jjim = {
   get zone() { return curZone.id; }, get acts() { return curActs.map(a => a.id + (a.disabled ? '(off)' : '')); },
   act(id) { const a = curActs.find(x => x.id === id && !x.disabled); if (a) { a.fn(); return true; } return false; },
   teleport(x, z, h) { if (TOGGLE[state.mode]) standUp(); else if (state.mode !== 'free') setMode('free'); player.root.position.set(x, 0, z); if (h !== undefined) { state.heading = h; camYaw = h + Math.PI; } camPos.set(x + Math.sin(camYaw) * 4, 3, z + Math.cos(camYaw) * 4); },
-  makeStory, shareStory, prepareStory, openHelp, openTut,
+  makeStory, shareStory, prepareStory, openHelp, openTut, collide, WORLD,
   // 홍보 이미지용: 지정한 시점에서 한 장 렌더링해 dataURL 로
   renderView(pos, look, W, H, fov = 50) {
     const cam = new THREE.PerspectiveCamera(fov, W / H, 0.1, 80); cam.position.set(...pos); cam.lookAt(...look);

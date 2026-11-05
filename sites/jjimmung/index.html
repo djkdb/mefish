@@ -184,6 +184,37 @@
     padding: 12px; display: flex; gap: 10px; align-items: center; }
   #offer p { margin: 0; flex: 1; font-size: 14px; }
 
+  /* ── 길 안내 · 시작 퀘스트 · +XP ── */
+  #guide { position: fixed; z-index: 5; left: calc(var(--sl) + 8px); top: calc(var(--st) + 108px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+    max-width: min(340px, calc(100vw - 16px - var(--sl) - var(--sr))); pointer-events: none; }
+  #guide > * { pointer-events: auto; }
+  body.mapon #guide { max-width: min(340px, calc(100vw - 150px - var(--sl) - var(--sr))); }
+  #quest { display: flex; gap: 8px; align-items: flex-start; padding: 8px 6px 8px 12px; border-left: 3px solid var(--acc2); }
+  #quest small { display: block; font-size: 11px; color: var(--acc2); font-weight: 700; letter-spacing: .02em; }
+  #quest b { display: block; font-size: 15px; font-weight: 800; margin: 1px 0 2px; }
+  #quest p { margin: 0; font-size: 13px; color: var(--dim); line-height: 1.4; }
+  #quest .ib { flex: none; width: 36px; height: 36px; border: 0; background: transparent; } #quest .ib svg { width: 16px; height: 16px; }
+  #nav { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 4px 0 10px; }
+  #nav .arw { width: 22px; height: 22px; flex: none; color: var(--acc2); transition: transform .12s linear; }
+  #nav .arw svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  #nav .dn { font-weight: 700; font-size: 14px; max-width: 9.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #nav .dd { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; min-width: 2.6em; }
+  #nav .btn { min-height: 36px; min-width: 0; padding: 0 10px; font-size: 13px; }
+  #nav .ib { width: 36px; height: 36px; border: 0; background: transparent; } #nav .ib svg { width: 16px; height: 16px; }
+  #mischip.pulse { box-shadow: 0 0 0 2px var(--acc2); animation: blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 50% { box-shadow: 0 0 0 2px transparent; } }
+  #xpf { position: fixed; z-index: 6; left: 50%; top: 38%; width: 0; height: 0; pointer-events: none; }
+  #xpf span { position: absolute; left: 0; top: 0; transform: translateX(-50%); white-space: nowrap; font-weight: 800; font-size: 20px; color: var(--led); text-shadow: 0 2px 6px rgba(0,0,0,.7); animation: xpup 1.6s ease-out forwards; font-variant-numeric: tabular-nums; }
+  @keyframes xpup { 0% { opacity: 0; transform: translate(-50%, 10px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -46px); } }
+  body.mg-open #actions { display: none; }
+  #bigmap { display: block; width: 100%; aspect-ratio: 64 / 61; background: #0e0b09; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 10px; cursor: pointer; }
+  .zl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .zl .btn { width: 100%; min-width: 0; min-height: 50px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 0 8px; text-align: left; white-space: nowrap; }
+  .zl .btn b { font-size: 15px; } .zl .btn small { color: var(--dim); font-weight: 600; font-size: 12px; }
+  .zl .btn b, .zl .btn small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .mapwrap { display: block; }
+  #loader .tip { min-height: 2.8em; max-width: 300px; text-align: center; font-size: 14px; line-height: 1.4; color: #cfc8c2; transition: opacity .3s; }
+
   /* ── 디버그 ── */
   #dbg { position: fixed; z-index: 50; left: calc(var(--sl) + 8px); bottom: calc(var(--sb) + 8px); max-width: 64vw; padding: 6px 8px; background: rgba(0, 0, 0, 0.8);
     border: 1px solid #333; border-radius: 4px; font: 11px/1.35 ui-monospace, Menlo, monospace; color: #9ef09e; white-space: pre-wrap; pointer-events: none; }
@@ -203,6 +234,9 @@
     #story img { max-height: 46vh; }
     #led.sub { top: calc(var(--st) + 108px); left: 50%; right: auto; transform: translateX(-50%); font-size: 14px; }
     #mgc { height: 56px; } .mgb { min-height: 50px; } #mg { padding: 8px; }
+    #guide { top: calc(var(--st) + 106px); } #quest p { display: none; }
+    .mapwrap { display: grid; grid-template-columns: 46% 1fr; gap: 12px; align-items: start; } #bigmap { margin: 0; }
+    .zl .btn { min-height: 38px; }
   }
   /* ── 태블릿 (아이패드 등): 너무 작지도 늘어지지도 않게 ── */
   body.tablet { font-size: 15px; }
@@ -212,6 +246,9 @@
   body.tablet #statpanel, body.tablet #mispanel { width: 380px; font-size: 15px; }
   body.tablet #map { top: calc(var(--st) + 68px); width: 210px; height: 200px; } body.tablet #map.big { width: 400px; height: 381px; }
   body.tablet .btn { min-height: 60px; font-size: 18px; padding: 0 26px; } body.tablet .btn.sm { min-height: 50px; font-size: 16px; }
+  body.tablet #guide { top: calc(var(--st) + 128px); max-width: 400px; } body.tablet #quest b { font-size: 17px; } body.tablet #quest p { font-size: 14px; }
+  body.tablet #nav { height: 50px; } body.tablet #nav .dn { font-size: 16px; } body.tablet #nav .btn { min-height: 42px; font-size: 15px; }
+  body.tablet .zl { grid-template-columns: repeat(3, 1fr); } body.tablet .mapwrap { display: grid; grid-template-columns: 5fr 6fr; gap: 14px; align-items: start; } body.tablet #bigmap { margin: 0; } body.tablet .sheet:has(#bigmap) { width: min(900px, 100%); }
   body.tablet #actions { right: calc(var(--sr) + 24px); bottom: calc(var(--sb) + 32px); gap: 10px; }
   body.tablet #joy { width: 150px; height: 150px; margin: -75px 0 0 -75px; } body.tablet #joy .knob { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
   body.tablet #toast { font-size: 16px; bottom: calc(var(--sb) + 190px); } body.tablet #led { font-size: 24px; top: calc(var(--st) + 128px); } body.tablet #led.sub { font-size: 17px; max-width: 640px; }
@@ -245,6 +282,11 @@
 <div id="lvup" hidden></div>
 <div id="sheet" class="ov" hidden></div>
 <canvas id="map" class="pnl" hidden></canvas>
+<div id="guide">
+  <div id="quest" class="pnl" hidden></div>
+  <div id="nav" class="pnl" hidden><span class="arw"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span><span class="dn"></span><span class="dd num"></span><button class="btn sm" data-auto>따라 걷기</button><button class="ib" data-x aria-label="안내 끄기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+</div>
+<div id="xpf"></div>
 <div id="led"></div>
 <div id="toast" class="pnl"></div>
 <div id="actions"></div>
@@ -255,6 +297,7 @@
   <div class="wm">찜멍</div>
   <div class="sub">동네 찜질방 들어가는 중</div>
   <div class="bar"><i></i></div>
+  <div class="tip"></div>
   <div class="err" hidden></div>
   <button class="btn acc" id="retry" hidden>다시 시도</button>
 </div>
@@ -274,6 +317,14 @@
     var er = L.querySelector('.err'); er.hidden = false; er.textContent = msg;
     var r = document.getElementById('retry'); r.hidden = false; r.onclick = function () { location.reload(); };
   };
+  // 불러오는 동안 한 줄 팁
+  (function () {
+    var tips = ['숯가마에서 “버티기 도전”을 해 보세요', '뜨거운 방 다음 얼음방에 가면 냉온욕 콤보', '식당 카운터에서 계란을 이마로 깨 보세요', '방마다 오래 머물면 스탬프 도장이 찍혀요',
+      '지도에서 가고 싶은 곳을 누르면 길을 알려 줘요', '조이스틱을 끝까지 밀면 달려요', '자판기·정수기·TV는 눌러서 쓸 수 있어요', '스탬프 9개를 다 모으면 오늘의 찜질 마스터'];
+    var i = Math.floor(Math.random() * tips.length), el = document.querySelector('#loader .tip');
+    function show() { if (!el || !el.isConnected) return; el.style.opacity = 0; setTimeout(function () { el.textContent = '팁 · ' + tips[i++ % tips.length]; el.style.opacity = 1; }, 300); }
+    el.textContent = '팁 · ' + tips[i++ % tips.length]; window.__tipT = setInterval(show, 3200);
+  })();
   window.__bootT = setTimeout(function () { if (!window.__booted) __bootFail('불러오는 데 오래 걸리고 있어요. 네트워크를 확인하고 다시 시도해 주세요.'); }, 25000);
   // iOS 핀치·더블탭 확대, 길게 누르기 메뉴 막기
   document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
@@ -944,7 +995,7 @@ function sign(parent, text, w, h, x, y, z, ry = 0, st = {}) {
   m.position.set(x, y, z); m.rotation.y = ry; parent.add(m); return m;
 }
 const LIGHTS = []; // 천장 조명 (한 번에 그림)
-function ceilLights(zid, xs, zs, w = 1.6, d = 0.4, c = 0xfff0d2) { const h = ZMAP[zid].h - 0.05; for (const x of xs) for (const z of zs) LIGHTS.push({ x, y: h, z, sx: w, sz: d, c }); }
+function ceilLights(zid, xs, zs, w = 1.6, d = 0.4, c = 0xfff0d2, round = false) { const h = ZMAP[zid].h - 0.05; for (const x of xs) for (const z of zs) LIGHTS.push({ x, y: h, z, sx: w, sz: d, c, round }); }
 const SEATS = [];
 function seat(kind, zone, o) { const s = { kind, zone, npc: false, y: 0, ...o }; s.ux ??= s.px; s.uz ??= s.pz; SEATS.push(s); return s; }
 function plant(parent, x, z, s = 1) {
@@ -1031,7 +1082,7 @@ const WOOD = lam(0x6b4428), DARK = lam(0x2b2622), STEEL = lam(0x9a9a98), WHITE =
   vm.position.set(9.3, 0.95, 18.6); G.add(vm); addBox(8.6, 10, 18.15, 19.0); REF.vend = vend; camProp(8.6, 10, 0, 1.9, 18.2, 19.0, [vm]);
   plant(G, -3.4, 28.7); plant(G, 3.4, 28.7);
   bx(G, WOOD, -11.6, -9.6, 0.4, 0.47, 18.3, 18.8, true); bx(G, DARK, -11.5, -9.7, 0, 0.4, 18.4, 18.7);
-  ceilLights('lobby', [-6, 0, 6], [20.5, 25.5]);
+  ceilLights('lobby', [-8, -4, 0, 4, 8], [20.2, 23.6, 27], 0.5, 0.5, 0xffe2b8, true); // 둥근 매립등
 }
 
 // ───────────────────────── 대형 휴게홀 ─────────────────────────
@@ -1501,9 +1552,20 @@ let waterTex;
 
 // 천장 조명 (전체 한 번에)
 {
-  const im = new THREE.InstancedMesh(BOXG(1, 0.06, 1), new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false }), LIGHTS.length);
-  LIGHTS.forEach((l, i) => { _o3.position.set(l.x, l.y, l.z); _o3.rotation.set(0, 0, 0); _o3.scale.set(l.sx, 1, l.sz); _o3.updateMatrix(); im.setMatrixAt(i, _o3.matrix); im.setColorAt(i, _col.setHex(l.c)); });
-  im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; scene.add(im);
+  // 유백색 확산판(살짝 따뜻하고 덜 밝게) + 짙은 테두리 → 화면 위쪽에서 빈 UI 상자처럼 보이지 않게
+  const warm = new THREE.Color(0xffe6c4);
+  for (const round of [false, true]) {
+    const L = LIGHTS.filter(l => !!l.round === round); if (!L.length) continue;
+    const g = round ? new THREE.CylinderGeometry(0.5, 0.5, 0.05, 20) : BOXG(1, 0.05, 1), gf = round ? new THREE.CylinderGeometry(0.5, 0.5, 0.04, 20) : BOXG(1, 0.04, 1);
+    const im = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false }), L.length);
+    const fr = new THREE.InstancedMesh(gf, new THREE.MeshLambertMaterial({ color: 0x4a3e34 }), L.length);
+    L.forEach((l, i) => {
+      _o3.position.set(l.x, l.y - 0.012, l.z); _o3.rotation.set(0, 0, 0); _o3.scale.set(l.sx, 1, l.sz); _o3.updateMatrix(); im.setMatrixAt(i, _o3.matrix);
+      im.setColorAt(i, _col.setHex(l.c).lerp(warm, 0.35).multiplyScalar(0.8));
+      _o3.position.set(l.x, l.y + 0.012, l.z); _o3.scale.set(l.sx + (round ? 0.12 : 0.16), 1, l.sz + (round ? 0.12 : 0.16)); _o3.updateMatrix(); fr.setMatrixAt(i, _o3.matrix);
+    });
+    im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; fr.instanceMatrix.needsUpdate = true; scene.add(im, fr);
+  }
 }
 // 묶어 둔 벽·바닥·천장 만들기
 for (const [key, b] of BATCH) {
@@ -1748,7 +1810,8 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => keys.delete(e.code));
 addEventListener('blur', () => keys.clear());
-const joy = { x: 0, y: 0, id: null, ox: 0, oy: 0 };
+const joy = { x: 0, y: 0, id: null, ox: 0, oy: 0, run: false, up: 0, lastLen: 0 };
+const RUN_SPEED = 6.1;
 const joyEl = document.getElementById('joy'), knobEl = joyEl.querySelector('.knob');
 let camYaw = 0, camPitch = 0.36, dragId = null, dragX = 0, dragY = 0, lastDrag = -10;
 // 자유 시점: 앉거나 누운 동안에도 끌어서 돌려 보고, 두 손가락·휠로 살짝 확대/축소
@@ -1762,7 +1825,7 @@ glEl.addEventListener('pointerdown', e => {
   startAudio(); closePanels();
   const { w } = viewSize();
   if (e.pointerType !== 'mouse' && e.clientX < w * 0.45 && joy.id === null) { // 왼손: 닿은 자리에 조이스틱
-    joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.x = joy.y = 0;
+    joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.x = joy.y = 0; joy.run = e.timeStamp - (joy.up || -1e9) < 320 && joy.lastLen > 0.5; // 두 번 밀기 = 달리기
     joyEl.style.left = e.clientX + 'px'; joyEl.style.top = e.clientY + 'px'; knobEl.style.transform = ''; joyEl.classList.add('on');
   } else {
     PTS.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now() });
@@ -1796,7 +1859,7 @@ document.addEventListener('gesturechange', e => { if (!e.scale) return; const z 
 glEl.addEventListener('wheel', e => { e.preventDefault(); const f = Math.exp(e.deltaY * 0.0012);
   if (orbiting()) view.zoom = THREE.MathUtils.clamp(view.zoom * f, 0.55, 1.7); else view.fz = THREE.MathUtils.clamp(view.fz * f, 0.6, 1.6); }, { passive: false });
 const endPtr = e => {
-  if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.classList.remove('on'); }
+  if (e.pointerId === joy.id) { joy.lastLen = Math.hypot(joy.x, joy.y); joy.up = e.timeStamp; joy.id = null; joy.x = joy.y = 0; joy.run = false; joyEl.classList.remove('on'); }
   const P_ = PTS.get(e.pointerId);
   if (P_ && e.type === 'pointerup' && !pinch && Math.hypot(e.clientX - P_.x0, e.clientY - P_.y0) < 10 && performance.now() - P_.t0 < 500) {
     const now = performance.now();
@@ -1930,11 +1993,11 @@ const SFX = {
     const f = A.ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 4; f.frequency.setValueAtTime(700, t); f.frequency.exponentialRampToValueAtTime(2600, t + 0.35);
     const g = A.ctx.createGain(); env(g, t, 0.05, 0.3, 0.32); s.connect(f).connect(g).connect(o); s.start(t, Math.random()); s.stop(t + 0.45); },
   crunch(vol = 1) { const o = sfxOut(vol); if (!o) return; const t = A.ctx.currentTime; for (let i = 0; i < 3; i++) noiseHit(t + i * 0.06, 0.04, 0.18, 'highpass', 2500, 0.7, o); },
-  coin() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; tone(1800, t, 0.12, 0.15, 'triangle', o); tone(2400, t + 0.08, 0.2, 0.12, 'triangle', o); },
+  coin(vol = 1) { const o = sfxOut(vol); if (!o) return; const t = A.ctx.currentTime; tone(1800, t, 0.12, 0.15, 'triangle', o); tone(2400, t + 0.08, 0.2, 0.12, 'triangle', o); },
   splash(vol = 1) { const o = sfxOut(vol); if (!o) return; const t = A.ctx.currentTime; noiseHit(t, 0.35, 0.25, 'bandpass', 1200, 0.8, o); },
   flop() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; tone(95, t, 0.2, 0.5, 'sine', o, 45); noiseHit(t, 0.12, 0.2, 'lowpass', 500, 1, o); },
   breath() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; noiseHit(t, 0.7, 0.12, 'bandpass', 1100, 0.8, o); },
-  step() { const o = sfxOut(1); if (!o) return; noiseHit(A.ctx.currentTime, 0.04, 0.05, 'lowpass', 380, 1, o); },
+  step(k = 1) { const o = sfxOut(1); if (!o) return; noiseHit(A.ctx.currentTime, 0.04, 0.05 * k, 'lowpass', 380 * k, 1, o); },
   sit() { const o = sfxOut(1); if (!o) return; noiseHit(A.ctx.currentTime, 0.1, 0.12, 'lowpass', 700, 1, o); },
   page() { const o = sfxOut(0.6); if (!o) return; noiseHit(A.ctx.currentTime, 0.12, 0.1, 'highpass', 3000, 0.5, o); },
 };
@@ -2012,6 +2075,12 @@ function toast(msg, dur = 1.8) { toastEl.textContent = msg; toastEl.classList.ad
 function showLED(msg, dur = 2.4, sub = false) {
   if (!sub && ledEl.classList.contains('sub') && ledTimer > 0) return; // 방송 자막이 먼저
   ledEl.textContent = msg; ledEl.classList.toggle('sub', sub); ledEl.classList.add('show'); ledTimer = dur;
+  ledAvoid();
+}
+function ledAvoid() { // 길 안내·시작 퀘스트와 겹치면 그 아래로
+  ledEl.style.top = '';
+  const gEl = document.getElementById('guide'), kids = [...gEl.children].filter(c => !c.hidden);
+  if (kids.length) { const a = ledEl.getBoundingClientRect(), g = gEl.getBoundingClientRect(); if (a.left < g.right && a.right > g.left && a.top < g.bottom && a.bottom > g.top) ledEl.style.top = Math.round(g.bottom + 6) + 'px'; }
 }
 function setZoneHUD(z) {
   zoneEl.querySelector('.zname').textContent = z.name;
@@ -2041,23 +2110,25 @@ function closePanels() { panelEl.hidden = true; misPanel.hidden = true; }
 const mapEl = document.getElementById('map'), mapBtn = document.getElementById('btnMap');
 let mapOn = LS.get('jjimmung-map', !isTouch), mapBig = false;
 function sizeMap() { const r = mapEl.getBoundingClientRect(); mapEl.width = Math.max(1, Math.round(r.width * DPR)); mapEl.height = Math.max(1, Math.round(r.height * DPR)); drawMap(); }
-function paintMap() { mapEl.hidden = !mapOn; mapBtn.classList.toggle('on', mapOn); if (mapOn) requestAnimationFrame(sizeMap); }
-mapBtn.addEventListener('click', e => { e.stopPropagation(); haptic(8); mapOn = !mapOn; mapBig = false; mapEl.classList.remove('big'); LS.set('jjimmung-map', mapOn); paintMap(); });
-mapEl.addEventListener('pointerdown', e => { e.stopPropagation(); mapBig = !mapBig; mapEl.classList.toggle('big', mapBig); requestAnimationFrame(sizeMap); });
+function paintMap() { mapEl.hidden = !mapOn; mapBtn.classList.toggle('on', mapOn); document.body.classList.toggle('mapon', mapOn); if (mapOn) requestAnimationFrame(sizeMap); }
+mapBtn.addEventListener('click', e => { e.stopPropagation(); haptic(8); openMapSheet(); });
+mapEl.addEventListener('pointerdown', e => { e.stopPropagation(); haptic(8); openMapSheet(); });
 paintMap();
-function drawMap() {
-  if (mapEl.hidden) return;
-  const g = mapEl.getContext('2d'), W = mapEl.width, H = mapEl.height, pad = 4 * DPR;
+function drawMap() { if (!mapEl.hidden) drawMapOn(mapEl, false); }
+function drawMapOn(cv, big) {
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, pad = 4 * DPR;
   const s = Math.min((W - pad * 2) / (WORLD.x1 - WORLD.x0), (H - pad * 2) / (WORLD.z1 - WORLD.z0));
   const ox = (W - (WORLD.x1 - WORLD.x0) * s) / 2, oz = (H - (WORLD.z1 - WORLD.z0) * s) / 2;
-  const X = x => ox + (x - WORLD.x0) * s, Y = z => oz + (z - WORLD.z0) * s;
+  const X = x => ox + (x - WORLD.x0) * s, Y = z => oz + (z - WORLD.z0) * s; cv._map = { ox, oz, s };
   g.clearRect(0, 0, W, H);
   for (const z of ZONES) {
     g.fillStyle = z.mc; g.fillRect(X(z.x0), Y(z.z0), (z.x1 - z.x0) * s, (z.z1 - z.z0) * s);
     g.strokeStyle = z === curZone ? '#ffffff' : 'rgba(0,0,0,0.6)'; g.lineWidth = (z === curZone ? 2 : 1) * DPR; g.strokeRect(X(z.x0), Y(z.z0), (z.x1 - z.x0) * s, (z.z1 - z.z0) * s);
     if (EV && EV.zone === z.id) { g.strokeStyle = `rgba(255,115,64,${0.55 + 0.45 * Math.sin(performance.now() / 180)})`; g.lineWidth = 3 * DPR; g.strokeRect(X(z.x0) + 2, Y(z.z0) + 2, (z.x1 - z.x0) * s - 4, (z.z1 - z.z0) * s - 4); }
-    if (mapBig && z.short) { g.fillStyle = '#fff'; g.font = `700 ${11 * DPR}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(z.short, X((z.x0 + z.x1) / 2), Y((z.z0 + z.z1) / 2)); }
+    if (big && z.short) { g.fillStyle = '#fff'; g.font = `700 ${12 * DPR}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(z.short, X((z.x0 + z.x1) / 2), Y((z.z0 + z.z1) / 2)); }
   }
+  if (NAV.path) { g.strokeStyle = '#ff7340'; g.lineWidth = 2.5 * DPR; g.setLineDash([4 * DPR, 3 * DPR]); g.beginPath(); NAV.path.forEach((q, i) => i ? g.lineTo(X(q.x), Y(q.z)) : g.moveTo(X(q.x), Y(q.z))); g.stroke(); g.setLineDash([]);
+    const D = NAV.dest; g.fillStyle = '#ff7340'; g.beginPath(); g.arc(X(D.x), Y(D.z), 4 * DPR, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 1.5 * DPR; g.stroke(); }
   g.fillStyle = '#5fd0ff'; for (const r of remotes.values()) { g.beginPath(); g.arc(X(r.ch.root.position.x), Y(r.ch.root.position.z), 2.6 * DPR, 0, 7); g.fill(); }
   const p = player.root.position, h = state.heading, R = 5 * DPR;
   g.fillStyle = '#ff7340'; g.strokeStyle = '#000'; g.lineWidth = 1 * DPR; g.beginPath();
@@ -2082,6 +2153,8 @@ function nearestSeat(p, kind, maxD = 1.25) {
   return best;
 }
 function setMode(m) {
+  if (m !== state.mode) modeChanged(state.mode, m);
+  player.body.rotation.x = 0;
   state.mode = m; state.modeT = 0; state.didHit = [false, false, false]; state.counted = false; view.yaw = 0; view.pitch = 0; view.zoom = 1;
   setProps(player, NET_MODES.has(m) ? m : '', m === 'egg' || m === 'drink' ? m : m === 'oneshot' ? 'drink' : '');
   document.getElementById('dim').style.opacity = m === 'sleep' ? 0.42 : 0;
@@ -2131,7 +2204,7 @@ function buildActions(p) {
   else if (z.id === 'powder') { const s = nearestSeat(p, 'mirror', 1.2); if (s) A_.push({ id: 'dry', label: '머리 말리기', fn: () => doDry(s), disabled: busy }); }
   else if (z.id === 'foot') { const s = nearestSeat(p, 'foot', 1.0); if (s) A_.push({ id: 'foot', label: '족욕하기', fn: () => doFoot(s), disabled: busy }); }
   else if (z.id === 'snack') {
-    if (nearCounter(p)) { A_.push({ id: 'egg', label: '계란 이마로 깨기', fn: startEgg, disabled: busy }); A_.push({ id: 'shot', label: '식혜 원샷', fn: startShot, disabled: busy }); }
+    if (nearCounter(p)) { A_.push({ id: 'egg', label: '계란 이마로 깨기', fn: startEgg, disabled: busy }); A_.push({ id: 'shot', label: '식혜 원샷', fn: startShot, disabled: busy }); A_.push({ id: 'sikhye', label: '식혜 한 잔', fn: () => { SFX.coin(); drinkNow('sikhye'); }, disabled: busy }); }
     else { const s = nearestSeat(p, 'table', 0.9); if (s) { A_.push({ id: 'ramen', label: '라면 먹기', fn: () => doEat(s, 'ramen'), disabled: busy }); A_.push({ id: 'bingsu', label: '팥빙수 먹기', fn: () => doEat(s, 'bingsu'), disabled: busy }); } }
   }
   if (!busy) for (const a of ixCandidates(p)) { if (A_.length >= 3) break; if (!A_.some(x => x.id === a.id)) A_.push(a); }
@@ -2139,7 +2212,7 @@ function buildActions(p) {
 }
 
 // ───────────────────────── 이동 · 충돌 ─────────────────────────
-function collide(p) {
+function collide(p, stat) {
   p.x = THREE.MathUtils.clamp(p.x, WORLD.x0 + PLAYER_R, WORLD.x1 - PLAYER_R);
   p.z = THREE.MathUtils.clamp(p.z, WORLD.z0 + PLAYER_R, WORLD.z1 - PLAYER_R);
   const dx = p.x - KILN.x, dz = p.z - KILN.z, d = Math.hypot(dx, dz);
@@ -2159,7 +2232,7 @@ function collide(p) {
         if (o === 0) p.x = b.x0 - PLAYER_R; else if (o === 1) p.x = b.x1 + PLAYER_R; else if (o === 2) p.z = b.z0 - PLAYER_R; else p.z = b.z1 + PLAYER_R; }
     }
   }
-  for (const n of npcs) {
+  if (!stat) for (const n of npcs) {
     if (!['walk', 'cool', 'stand', 'cashier', 'dry', 'sweat'].includes(n.mode)) continue;
     const q = n.ch.root.position, ex = p.x - q.x, ez = p.z - q.z, dd = Math.hypot(ex, ez), min = PLAYER_R + 0.3;
     if (dd < min && dd > 1e-4) { p.x = q.x + ex / dd * min; p.z = q.z + ez / dd * min; }
@@ -2397,26 +2470,33 @@ function update(dt, t) {
   ix += joy.x; iy -= joy.y;
   if (mgActive() || state.mode === 'dizzy' || state.mode === 'oneshot' || !sheetEl.hidden) { ix = 0; iy = 0; }
   const il = Math.hypot(ix, iy); if (il > 1) { ix /= il; iy /= il; }
-  const moving = Math.hypot(ix, iy) > 0.15;
+  let moving = Math.hypot(ix, iy) > 0.15;
+  if (moving) cancelAuto();
   if (moving && TOGGLE[state.mode] && state.modeT > 0.5) standUp();
+  // 달리기: 조이스틱 끝까지 · 두 번 밀기 · Shift
+  const runIn = moving && (joy.run || (joy.id !== null && Math.hypot(joy.x, joy.y) > 0.92) || keys.has('ShiftLeft') || keys.has('ShiftRight'));
 
   if (state.mode === 'free') {
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
-    const mx = fx * iy + rx * ix, mz = fz * iy + rz * ix;
-    const target = moving ? 3.8 * Math.min(1, Math.hypot(ix, iy)) : 0;
-    state.speed += (target - state.speed) * (1 - Math.exp(-10 * dt));
+    let mx = fx * iy + rx * ix, mz = fz * iy + rz * ix;
+    const steer = moving ? null : autoSteer();
+    if (steer) { mx = steer.x; mz = steer.z; moving = true; }
+    state.run = runIn;
+    const target = moving ? (runIn ? RUN_SPEED : 3.8 * (steer ? 1 : Math.min(1, Math.hypot(ix, iy)))) : 0;
+    state.speed += (target - state.speed) * (1 - Math.exp(-(runIn ? 6 : 10) * dt));
     if (moving) {
       const ml = Math.hypot(mx, mz);
-      state.heading = lerpAngle(state.heading, Math.atan2(mx / ml, mz / ml), 1 - Math.exp(-12 * dt));
-      if (iy > 0.3 && performance.now() / 1000 - lastDrag > 1.2) camYaw = lerpAngle(camYaw, state.heading + Math.PI, 1 - Math.exp(-1.2 * dt));
+      state.heading = lerpAngle(state.heading, Math.atan2(mx / ml, mz / ml), 1 - Math.exp(-(steer ? 7 : 12) * dt));
+      if ((iy > 0.3 || steer) && performance.now() / 1000 - lastDrag > 1.2) camYaw = lerpAngle(camYaw, state.heading + Math.PI, 1 - Math.exp(-(steer ? 1.6 : 1.2) * dt));
     }
     p.x += Math.sin(state.heading) * state.speed * dt; p.z += Math.cos(state.heading) * state.speed * dt; p.y = 0;
     collide(p);
     player.phase += state.speed * dt * 3.0;
     applyPose(player, POSES.stand, dt, 10); player.body.scale.set(1, 1, 1); player.headG.rotation.z = 0; player.body.position.x = 0;
-    walkSwing(player, Math.min(1, state.speed / 3.8));
+    walkSwing(player, Math.min(1.35, state.speed / 3.8));
+    player.body.rotation.x += ((state.speed > 4.4 ? 0.14 : 0) - player.body.rotation.x) * (1 - Math.exp(-8 * dt)); // 달릴 땐 살짝 앞으로
     if (player.zzz) player.zzz.visible = false; player.blob.visible = true; if (player.mask) player.mask.visible = false;
-    stepAcc += state.speed * dt; if (stepAcc > 0.95) { stepAcc = 0; SFX.step(); }
+    stepAcc += state.speed * dt; if (stepAcc > (state.speed > 4.4 ? 1.15 : 0.95)) { stepAcc = 0; SFX.step(state.speed > 4.4 ? 1.5 : 1); }
   } else if (state.mode === 'egg' || state.mode === 'drink') {
     state.speed = 0; player.body.position.set(0, 0, 0);
     state.heading = lerpAngle(state.heading, state.faceTo, 1 - Math.exp(-8 * dt));
@@ -2480,6 +2560,7 @@ function update(dt, t) {
   }
   saveT += dt; if (saveT > 3) { saveT = 0; if (state.mode === 'sweat' || state.mode === 'sleep') saveStats(); }
   gameTick(dt, t);
+  navTick(dt, t); onbTick();
   tickStars(player, GM.starsT > 0 || state.mode === 'dizzy', t);
 }
 let saveT = 0;
@@ -2487,6 +2568,7 @@ function updateWorld(dt, t) {
   const cp = camera.position;
   for (const n of npcs) {
     const ch = n.ch; n.t += dt;
+    if (n.agent) { agentTick(n, dt, t, cp); continue; }
     if (n.path) {
       const q = ch.root.position, dq = Math.hypot(q.x - cp.x, q.z - cp.z), vis = dq < Q.cull + 10 && !!(zoneAt(q.x, q.z) && ZG[zoneAt(q.x, q.z).id].visible); ch.root.visible = vis; setLod(ch, dq < 9);
       const tgt = n.path[n.wp], dx = tgt.x - q.x, dz = tgt.z - q.z, d = Math.hypot(dx, dz);
@@ -2672,8 +2754,10 @@ function gainFresh(v, why) {
   D.fresh = Math.min(100, D.fresh + g); addXP(g * 3);
 }
 let lastLv = myLv();
-function addXP(n) {
+let XPACC = 0;
+function addXP(n, how) {
   G.xp += n; const lv = myLv();
+  if (how === 'float') xpFloat(n); else if (how !== 'quiet') XPACC += n;
   if (lv > lastLv) { lastLv = lv; levelUp(lv); }
 }
 
@@ -2688,9 +2772,9 @@ function stamp(id) {
   D.stamps[id] = `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
   const s = STAMPS.find(x => x[0] === id), n = Object.keys(D.stamps).length;
   stampFx.innerHTML = `<div class="stamp-ink"><span>찜</span><small>${s[1]}</small></div><p>${s[1]} 도장 쾅! <b class="num">${n} / ${STAMPS.length}</b></p>`;
-  celebrate(stampFx, 2000); SFX.stamp(); haptic([30, 40, 20]); addXP(25); saveG();
+  celebrate(stampFx, 2000); SFX.stamp(); haptic([30, 40, 20]); addXP(25, 'float'); saveG();
   if (n === STAMPS.length && !D.master) {
-    D.master = true; addXP(150); saveG();
+    D.master = true; addXP(150, 'float'); saveG();
     setTimeout(() => { showLED('오늘의 찜질 마스터'); toast('스탬프 9개 완성! 오늘 하루 이름표에 찜질 마스터가 붙어요', 4); SFX.levelup(); offerShare(true); }, 2100);
   }
 }
@@ -2705,7 +2789,7 @@ function levelUp(lv) {
 function missionTick() {
   for (const id of missionsFor(D.d)) {
     const M = MISSIONS[id]; if (D.missions[id] || M.v() < M.goal) continue;
-    D.missions[id] = 1; addXP(60); saveG();
+    D.missions[id] = 1; addXP(60, 'float'); saveG();
     showLED('미션 완료'); toast(`미션 완료 · ${M.t} (+60 XP)`, 3); SFX.mission(); haptic([15, 30, 15]);
   }
 }
@@ -2735,9 +2819,9 @@ const mgActive = () => !!MG.kind;
 function mgOpen(kind, title, tapLabel) {
   MG.kind = kind; MG.t = 0; MG.msg = ''; MG.msgT = 0; MG.done = false;
   mgEl.querySelector('.mgt').textContent = title; mgEl.querySelector('[data-tap]').textContent = tapLabel;
-  mgEl.hidden = false; setActions([]); sizeMgc();
+  mgEl.hidden = false; setActions([]); sizeMgc(); document.body.classList.add('mg-open');
 }
-function mgClose() { MG.kind = null; MG.holding = false; mgEl.hidden = true; actionsKey = ''; }
+function mgClose() { MG.kind = null; MG.holding = false; mgEl.hidden = true; actionsKey = ''; document.body.classList.remove('mg-open'); flushXP(); }
 function sizeMgc() { const r = mgc.getBoundingClientRect(); mgc.width = Math.round(r.width * DPR); mgc.height = Math.round(r.height * DPR); }
 function mgMsg(m) { MG.msg = m; MG.msgT = 1.2; }
 
@@ -2757,7 +2841,7 @@ function endChar(reason) {
   const secs = Math.floor(MG.t); mgClose();
   const best = secs > D.charBest; if (best) D.charBest = secs;
   toast(`${reason === 'limit' ? '한계! ' : ''}${secs}초 버텼어요${best ? ' · 오늘 최고!' : ''}`, 3);
-  if (best && secs >= 1) { addXP(15); if (secs > D.posted.char) { D.posted.char = secs; boardPost('char', secs); } }
+  if (best && secs >= 1) { addXP(15, 'float'); if (secs > D.posted.char) { D.posted.char = secs; boardPost('char', secs); } }
   saveG(); if (state.mode === 'sweat') standUp();
 }
 // 2) 계란 타이밍
@@ -3329,6 +3413,295 @@ Object.assign(SFX, {
   shutter() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; noiseHit(t, 0.03, 0.4, 'highpass', 4000, 0.7, o); noiseHit(t + 0.08, 0.04, 0.3, 'highpass', 3000, 0.7, o); },
 });
 
+
+// ═════════════════════════ 길 찾기 · 시작 퀘스트 · 손님들의 하루 · 안내 한 줄 ═════════════════════════
+
+// ── 걸을 수 있는 칸 (0.5m 격자, 실제 충돌 함수로 판정) ──
+const NAV = { S: 0.5, nx: 0, nz: 0, free: null, dest: null, path: null, auto: false, lastPlan: 0, arrived: null };
+function navBuild() {
+  if (NAV.free) return;
+  const S = NAV.S; NAV.nx = Math.round((WORLD.x1 - WORLD.x0) / S); NAV.nz = Math.round((WORLD.z1 - WORLD.z0) / S);
+  NAV.free = new Uint8Array(NAV.nx * NAV.nz); const p = { x: 0, z: 0 };
+  for (let j = 0; j < NAV.nz; j++) for (let i = 0; i < NAV.nx; i++) {
+    const x = WORLD.x0 + (i + 0.5) * S, z = WORLD.z0 + (j + 0.5) * S; p.x = x; p.z = z; collide(p, true);
+    NAV.free[j * NAV.nx + i] = Math.hypot(p.x - x, p.z - z) < 0.02 ? 1 : 0;
+  }
+}
+const cellOf = (x, z) => [Math.floor((x - WORLD.x0) / NAV.S), Math.floor((z - WORLD.z0) / NAV.S)];
+const cellPos = (i, j) => ({ x: WORLD.x0 + (i + 0.5) * NAV.S, z: WORLD.z0 + (j + 0.5) * NAV.S });
+const isFree = (i, j) => i >= 0 && j >= 0 && i < NAV.nx && j < NAV.nz && NAV.free[j * NAV.nx + i] === 1;
+function nearestFree(i, j) {
+  if (isFree(i, j)) return [i, j];
+  for (let r = 1; r < 12; r++) for (let di = -r; di <= r; di++) for (const dj of [-r, r]) { if (isFree(i + di, j + dj)) return [i + di, j + dj]; if (isFree(i + dj, j + di)) return [i + dj, j + di]; }
+  return null;
+}
+function lineFree(a, b) { // 두 점 사이를 0.15m 간격으로 확인
+  const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.max(1, Math.ceil(d / 0.15));
+  for (let k = 0; k <= n; k++) { const [i, j] = cellOf(a.x + (b.x - a.x) * k / n, a.z + (b.z - a.z) * k / n); if (!isFree(i, j)) return false; }
+  return true;
+}
+function navPath(from, to) {
+  navBuild();
+  const s = nearestFree(...cellOf(from.x, from.z)), g = nearestFree(...cellOf(to.x, to.z)); if (!s || !g) return null;
+  const N = NAV.nx * NAV.nz, gs = new Float32Array(N).fill(1e9), came = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
+  const si = s[1] * NAV.nx + s[0], gi = g[1] * NAV.nx + g[0], H = (i, j) => { const dx = Math.abs(i - g[0]), dz = Math.abs(j - g[1]); return Math.max(dx, dz) + 0.414 * Math.min(dx, dz); };
+  const heap = []; const push = (f, k) => { heap.push([f, k]); let c = heap.length - 1; while (c > 0) { const p = (c - 1) >> 1; if (heap[p][0] <= heap[c][0]) break; [heap[p], heap[c]] = [heap[c], heap[p]]; c = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let c = 0; for (;;) { const l = 2 * c + 1, r = l + 1; let m = c; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === c) break; [heap[m], heap[c]] = [heap[c], heap[m]]; c = m; } } return top; };
+  gs[si] = 0; push(H(...s), si);
+  while (heap.length) {
+    const [, k] = pop(); if (closed[k]) continue; closed[k] = 1; if (k === gi) break;
+    const i = k % NAV.nx, j = (k / NAV.nx) | 0;
+    for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const a = i + di, b = j + dj; if (!isFree(a, b)) continue;
+      if (di && dj && (!isFree(i + di, j) || !isFree(i, j + dj))) continue;
+      const nk = b * NAV.nx + a, ng = gs[k] + (di && dj ? 1.414 : 1);
+      if (ng < gs[nk]) { gs[nk] = ng; came[nk] = k; push(ng + H(a, b), nk); }
+    }
+  }
+  if (came[gi] === -1 && gi !== si) return null;
+  const cells = []; for (let k = gi; k !== -1; k = came[k]) { cells.push(cellPos(k % NAV.nx, (k / NAV.nx) | 0)); if (k === si) break; }
+  cells.reverse();
+  const pts = [{ x: from.x, z: from.z }, ...cells.slice(1), { x: to.x, z: to.z }];
+  // 실처럼 당겨서 꺾이는 곳만 남기기
+  const out = [pts[0]]; let a = 0;
+  while (a < pts.length - 1) { let b = pts.length - 1; while (b > a + 1 && !lineFree(pts[a], pts[b])) b--; out.push(pts[b]); a = b; }
+  return out;
+}
+const pathLen = (p, from = 0) => { let d = 0; for (let i = from; i < p.length - 1; i++) d += Math.hypot(p[i + 1].x - p[i].x, p[i + 1].z - p[i].z); return d; };
+// 경로 위에서 가장 가까운 지점과 그 앞쪽 목표점
+function pathProgress(path, x, z, ahead = 1.3) {
+  let best = { d: 1e9, seg: 0, t: 0 };
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i], b = path[i + 1], vx = b.x - a.x, vz = b.z - a.z, L2 = vx * vx + vz * vz || 1;
+    const t = THREE.MathUtils.clamp(((x - a.x) * vx + (z - a.z) * vz) / L2, 0, 1), px = a.x + vx * t, pz = a.z + vz * t, d = Math.hypot(x - px, z - pz);
+    if (d < best.d) best = { d, seg: i, t };
+  }
+  let seg = best.seg, t = best.t, left = ahead, cx, cz;
+  for (;;) { const a = path[seg], b = path[seg + 1], L = Math.hypot(b.x - a.x, b.z - a.z) || 1e-6, rem = (1 - t) * L;
+    if (rem >= left || seg >= path.length - 2) { const tt = Math.min(1, t + left / L); cx = a.x + (b.x - a.x) * tt; cz = a.z + (b.z - a.z) * tt; break; }
+    left -= rem; seg++; t = 0; }
+  const remain = (1 - best.t) * Math.hypot(path[best.seg + 1].x - path[best.seg].x, path[best.seg + 1].z - path[best.seg].z) + pathLen(path, best.seg + 1);
+  return { off: best.d, seg: best.seg, t: best.t, target: { x: cx, z: cz }, remain };
+}
+
+// ── 목적지 ──
+const DEST = {
+  lobby: { x: -6.5, z: 23.6 }, hall: { x: 0, z: 11 }, corr: { x: 0, z: -16.5 }, sleep: { x: -20.6, z: -21.5 }, kiln: { x: -12, z: -24.6, r: 1.6 },
+  hwangto: { x: -1.5, z: -22.5 }, char: { x: 6, z: -22.5 }, salt: { x: 14, z: -22.5 }, cyp: { x: 21.5, z: -22.5 }, ice: { x: 28.5, z: -23 },
+  manga: { x: -24, z: -2.5 }, powder: { x: -27, z: 11 }, snack: { x: 25.5, z: -5 }, foot: { x: 24, z: 8.4 },
+};
+function setDest(d, opts = {}) {
+  // d: { x, z, name, zone? }
+  NAV.dest = d; NAV.auto = !!opts.auto; NAV.arrived = null;
+  NAV.path = navPath(player.root.position, d); NAV.lastPlan = performance.now();
+  if (!NAV.path) { toast('길을 찾지 못했어요', 2); NAV.dest = null; return; }
+  navEl.hidden = false; navEl.querySelector('.dn').textContent = d.name; paintAuto(); placeGuide(); if (!opts.silent) SFX.click(); haptic(10);
+}
+function clearDest() { NAV.dest = null; NAV.path = null; NAV.auto = false; navEl.hidden = true; arrows.count = 0; destRing.visible = false; ledAvoid(); }
+const destOfZone = id => ({ ...DEST[id], name: ZMAP[id].name, zone: id });
+
+// ── 바닥 화살표 (한 번에 그림) ──
+const arrowTex = canvasTex(64, 64, g => {
+  g.clearRect(0, 0, 64, 64); g.lineCap = 'round'; g.lineJoin = 'round';
+  g.shadowColor = 'rgba(255,255,255,0.85)'; g.shadowBlur = 7; g.strokeStyle = '#ffffff'; g.lineWidth = 13;
+  g.beginPath(); g.moveTo(12, 44); g.lineTo(32, 22); g.lineTo(52, 44); g.stroke();
+});
+const ARW_N = 140;
+const arrows = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.9, 0.9).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: arrowTex, transparent: true, depthWrite: false, fog: false, toneMapped: false }), ARW_N);
+arrows.count = 0; arrows.frustumCulled = false; arrows.renderOrder = 2; scene.add(arrows);
+for (let i = 0; i < ARW_N; i++) arrows.setColorAt(i, _col.setHex(0xff7340));
+const destRing = mk(new THREE.RingGeometry(0.42, 0.6, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff7340, transparent: true, opacity: 0.8, depthWrite: false, fog: false, toneMapped: false }), 0, 0.07, 0, scene);
+destRing.visible = false; destRing.renderOrder = 2;
+function drawArrows(t, pr) {
+  const P = NAV.path, p = player.root.position; let n = 0;
+  // 내 발밑에서 0.7m 앞부터 0.85m 간격
+  let seg = pr.seg, a = { x: P[seg].x + (P[seg + 1].x - P[seg].x) * pr.t, z: P[seg].z + (P[seg + 1].z - P[seg].z) * pr.t }, d0 = 0.7;
+  for (; seg < P.length - 1 && n < ARW_N; seg++) {
+    const b = P[seg + 1], L = Math.hypot(b.x - a.x, b.z - a.z), ry = Math.atan2(b.x - a.x, b.z - a.z);
+    let d = d0;
+    for (; d < L && n < ARW_N; d += 1.0) {
+      _o3.position.set(a.x + (b.x - a.x) * d / L, 0.07, a.z + (b.z - a.z) * d / L); _o3.rotation.set(0, ry + Math.PI, 0); _o3.scale.setScalar(1); _o3.updateMatrix(); arrows.setMatrixAt(n, _o3.matrix);
+      const w = Math.max(0, Math.sin(n * 0.6 - t * 6)) ** 2; // 앞으로 흘러가는 물결
+      arrows.setColorAt(n, _col.setRGB(1, 0.4 + 0.22 * w, 0.16 + 0.2 * w)); n++;
+    }
+    d0 = d - L; a = b;
+  }
+  arrows.count = n; arrows.instanceMatrix.needsUpdate = true; if (arrows.instanceColor) arrows.instanceColor.needsUpdate = true;
+  const D = NAV.dest; destRing.visible = true; destRing.position.set(D.x, 0.07, D.z); destRing.scale.setScalar(1 + 0.12 * Math.sin(t * 4)); destRing.material.opacity = 0.55 + 0.3 * Math.sin(t * 4);
+}
+
+// ── 안내 알약 (방향 · 거리 · 따라 걷기) ──
+const navEl = document.getElementById('nav'), guideEl = document.getElementById('guide');
+const placeGuide = () => { placeUnderRow2(guideEl); ledAvoid(); };
+addEventListener('resize', () => setTimeout(placeGuide, 50));
+function paintAuto() { const b = navEl.querySelector('[data-auto]'); b.classList.toggle('on', NAV.auto); b.textContent = NAV.auto ? '따라 걷는 중' : '따라 걷기'; }
+navEl.addEventListener('pointerdown', e => e.stopPropagation());
+navEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); haptic(8);
+  if (b.dataset.auto !== undefined) { NAV.auto = !NAV.auto; paintAuto(); if (NAV.auto && TOGGLE[state.mode]) standUp(); }
+  else if (b.dataset.x !== undefined) clearDest(); });
+function navTick(dt, t) {
+  if (!NAV.dest) return;
+  const p = player.root.position, D = NAV.dest;
+  let pr = pathProgress(NAV.path, p.x, p.z, 1.3);
+  // 경로에서 2.5m 넘게 벗어나거나 따라 걷다 막히면 다시 계산 (1초에 한 번까지)
+  if (NAV.auto && state.mode === 'free') { const mv = Math.hypot(p.x - (NAV.lx ?? p.x), p.z - (NAV.lz ?? p.z)); NAV.stuck = mv < 0.4 * dt ? (NAV.stuck || 0) + dt : 0; } else NAV.stuck = 0;
+  NAV.lx = p.x; NAV.lz = p.z;
+  if ((pr.off > 2.5 || NAV.stuck > 1.2) && performance.now() - NAV.lastPlan > 1000) {
+    const np = navPath(p, D); NAV.lastPlan = performance.now(); NAV.stuck = 0; if (np) { NAV.path = np; pr = pathProgress(np, p.x, p.z, 1.3); }
+  }
+  const dist = Math.hypot(D.x - p.x, D.z - p.z);
+  if (dist < 1.2 || (D.zone && curZone.id === D.zone && dist < (D.r || 3.5))) {
+    const name = D.name, cb = D.onArrive; clearDest(); SFX.mission(); haptic([15, 30, 15]); toast(`도착 · ${name}`, 2); NAV.arrived = name; NAV.arrivedAt = performance.now(); if (cb) cb(); return;
+  }
+  // 알약 화살표: 화면 위쪽 = 내가 보는 방향
+  const ang = Math.atan2(pr.target.x - p.x, pr.target.z - p.z) - (camYaw + Math.PI);
+  navArw.style.transform = `rotate(${-ang}rad)`;
+  const m = `${Math.max(1, Math.round(pr.remain))}m`; if (navDd.textContent !== m) navDd.textContent = m;
+  NAV.target = pr.target;
+  drawArrows(t, pr);
+}
+const navArw = navEl.querySelector('.arw'), navDd = navEl.querySelector('.dd');
+// update() 의 자유 이동에서 부름: 따라 걷기 중이면 가야 할 방향(월드 기준) 돌려줌
+function autoSteer() {
+  if (!NAV.auto || !NAV.dest || !NAV.target || state.mode !== 'free') return null;
+  const p = player.root.position, dx = NAV.target.x - p.x, dz = NAV.target.z - p.z, l = Math.hypot(dx, dz);
+  return l < 1e-3 ? null : { x: dx / l, z: dz / l };
+}
+function cancelAuto() { if (NAV.auto) { NAV.auto = false; paintAuto(); } }
+
+// ── 지도에서 고르기 ──
+function openMapSheet() {
+  const p = player.root.position;
+  const list = ZONES.filter(z => z.short).map(z => ({ z, d: Math.hypot(DEST[z.id].x - p.x, DEST[z.id].z - p.z) })).sort((a, b) => a.d - b.d);
+  openSheet('map', `<div class="sh-h"><h2>어디 갈까?</h2>${CLOSE_BTN}</div><div class="mapwrap"><canvas id="bigmap" aria-label="지도: 가고 싶은 곳을 누르세요"></canvas><div>
+    <div class="zl">${list.map(({ z, d }) => `<button class="btn sm" data-go="${z.id}" aria-label="${z.name}"><b>${z.short}</b><small class="num">${z.temp !== undefined ? `${z.temp}℃ · ` : ''}${Math.round(d)}m</small></button>`).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" data-mini>${mapOn ? '작은 지도 숨기기' : '작은 지도 늘 켜 두기'}</button>${NAV.dest ? '<button class="btn sm ghost" data-navoff>안내 끄기</button>' : ''}</div></div></div>`);
+  const c = document.getElementById('bigmap'); requestAnimationFrame(() => { const r = c.getBoundingClientRect(); c.width = r.width * DPR; c.height = r.height * DPR; drawMapOn(c, true); });
+  c.addEventListener('click', e => {
+    const r = c.getBoundingClientRect(), M = c._map; if (!M) return;
+    const wx = WORLD.x0 + ((e.clientX - r.left) * DPR - M.ox) / M.s, wz = WORLD.z0 + ((e.clientY - r.top) * DPR - M.oz) / M.s, z = zoneAt(wx, wz);
+    if (z && DEST[z.id]) { closeSheet(); setDest(destOfZone(z.id)); }
+  });
+}
+sheetEl.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.go) { e.stopPropagation(); closeSheet(); setDest(destOfZone(b.dataset.go)); }
+  else if (b.dataset.mini !== undefined) { e.stopPropagation(); mapOn = !mapOn; LS.set('jjimmung-map', mapOn); paintMap(); closeSheet(); }
+  else if (b.dataset.navoff !== undefined) { e.stopPropagation(); clearDest(); closeSheet(); }
+}, true);
+
+// ═════════ 첫 방문 시작 퀘스트 ═════════
+const ONB = [
+  { id: 'key', t: '카운터에서 열쇠 팔찌 받기', hint: '입구 왼쪽 카운터 앞에서 “열쇠 팔찌 받기”', dest: { x: -7.6, z: 23.6, name: '카운터' }, done: () => !!G.key },
+  { id: 'hall', t: '휴게홀 가 보기', hint: '북쪽 문으로 들어가면 대형 휴게홀이에요', dest: { x: 0, z: 8, name: '대형 휴게홀', zone: 'hall' }, done: s => curZone.id === 'hall' },
+  { id: 'sweat', t: '아무 찜질방에서 땀 30초', hint: '찜질방 안에서 “땀 빼기”를 누르고 30초 버텨요', dest: () => { const p = player.root.position, id = ['kiln', 'hwangto', 'char', 'salt', 'cyp'].map(id => [id, Math.hypot(DEST[id].x - p.x, DEST[id].z - p.z)]).sort((a, b) => a[1] - b[1])[0][0]; return destOfZone(id); }, done: () => state.mode === 'sweat' && state.modeT >= 30 },
+  { id: 'sikhye', t: '매점에서 식혜 한 잔', hint: '식당 카운터나 자판기에서 식혜를 마셔요', dest: { x: 27.2, z: -5, name: '식당 카운터' }, done: s => today.sikhye > s.sik },
+  { id: 'mis', t: "'오늘의 미션' 열어 보기", hint: '위쪽 “미션” 칩을 눌러 보세요', done: () => !misPanel.hidden },
+];
+const OB = Object.assign({ step: -1, done: false, skipped: false }, LS.get('jjimmung-onb', {}));
+const questEl = document.getElementById('quest');
+function onbStart() { if (OB.done || OB.skipped || OB.step >= 0) return; OB.step = 0; onbEnter(); }
+function onbEnter() {
+  const S = ONB[OB.step]; OB.snap = { sik: today.sikhye }; LS.set('jjimmung-onb', OB);
+  questEl.hidden = false; placeGuide();
+  questEl.innerHTML = `<div><small>시작 퀘스트 ${OB.step + 1} / ${ONB.length}</small><b>${S.t}</b><p>${S.hint}</p></div><button class="ib" data-skip aria-label="건너뛰기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+  if (S.dest) setDest(typeof S.dest === 'function' ? S.dest() : { ...S.dest }, { silent: true, auto: NAV.auto && !!NAV.dest }); else clearDest(); // 따라 걷는 중이면 다음 목적지로 이어서
+  misEl.classList.toggle('pulse', S.id === 'mis');
+}
+function onbTick() {
+  if (OB.step < 0 || OB.done || OB.skipped) return;
+  const S = ONB[OB.step]; if (!S.done(OB.snap || {})) return;
+  addXP(20, 'float'); SFX.mission(); haptic([15, 30, 15]);
+  OB.step++;
+  if (OB.step >= ONB.length) { OB.done = true; LS.set('jjimmung-onb', OB); questEl.hidden = true; misEl.classList.remove('pulse'); setTimeout(() => { showLED('시작 퀘스트 완료'); toast('시작 퀘스트 완료! 이제 마음대로 쉬어 가세요', 3); }, 400); return; }
+  toast(`좋아요! 다음: ${ONB[OB.step].t}`, 2.4); onbEnter();
+}
+questEl.addEventListener('pointerdown', e => e.stopPropagation());
+questEl.addEventListener('click', e => { if (!e.target.closest('[data-skip]')) return; e.stopPropagation(); OB.skipped = true; LS.set('jjimmung-onb', OB); questEl.hidden = true; misEl.classList.remove('pulse'); clearDest(); toast('시작 퀘스트를 건너뛰었어요 · 지도에서 언제든 길 찾기', 2.6); });
+if (OB.step >= 0 && !OB.done && !OB.skipped) setTimeout(onbEnter, 600); // 새로고침해도 이어서
+
+// ═════════ 처음 몇 번만: 지금 하는 일 한 줄 안내 ═════════
+const HINTS = {
+  sweat: '땀 빼는 중 · 30초면 도장, 개운함이 차요', cool: '열 식히는 중 · 뜨거운 방에서 왔다면 냉온욕 콤보!', lie: '누워서 쉬는 중 · 개운함이 조금씩 차요',
+  sleep: '자는 중 · 1분이면 수면실 도장', massage: '안마 중 · 개운함이 조금씩 차요', read: '만화책 읽는 중 · 8초면 한 권 끝',
+  foot: '족욕 중 · 30초면 도장, 체온이 내려가요', ramen: '라면 먹는 중 · 다 먹으면 식당 도장', bingsu: '팥빙수 먹는 중 · 다 먹으면 식당 도장', dry: '머리 말리는 중 · 거울 셀카도 찍어 보세요',
+};
+const hintSeen = LS.get('jjimmung-hints', {});
+function maybeHint(m) { if (!HINTS[m] || (hintSeen[m] || 0) >= 3) return; hintSeen[m] = (hintSeen[m] || 0) + 1; LS.set('jjimmung-hints', hintSeen); setTimeout(() => { if (state.mode === m) toast(HINTS[m], 3.2); }, 1300); }
+
+// +XP 떠오르는 글자 · 동작이 끝날 때 모아서 한 번
+const xpfEl = document.getElementById('xpf');
+function xpFloat(n, sound) {
+  if (n < 1) return; const s = document.createElement('span'); s.textContent = `+${Math.round(n)} XP`; xpfEl.appendChild(s); setTimeout(() => s.remove(), 1600);
+  if (sound) SFX.good();
+}
+function flushXP() { if (XPACC >= 1) xpFloat(XPACC, true); XPACC = 0; }
+function modeChanged(from, to) {
+  if (to === 'free' && from !== 'free') setTimeout(flushXP, 250); // 마시기·먹기 끝 처리 다음에
+  else if (from === 'free') XPACC = 0;
+  maybeHint(to);
+}
+
+// ═════════ 손님들의 하루 (자판기 · 정수기 · TV · 찜질 · 라면 · 산책) ═════════
+const AG_ACTS = [
+  ['vend', 3], ['water', 2], ['tv', 2], ['sweat', 3], ['ramen', 2], ['wander', 2],
+];
+function pickAct() { const tot = AG_ACTS.reduce((a, b) => a + b[1], 0); let r = Math.random() * tot; for (const [k, w] of AG_ACTS) { if ((r -= w) < 0) return k; } return 'wander'; }
+const HOTSPOTS = [{ x: -1.5, z: -24.5 }, { x: 6, z: -24 }, { x: 14, z: -24 }, { x: 21.5, z: -23.5 }, { x: -12.8, z: -25.6 }];
+function agentPlan(n, force) {
+  const k = force || pickAct(), p = n.ch.root.position;
+  let to, act;
+  if (k === 'vend') { const o = Math.random() < 0.5 ? IX.find(x => x.id === 'vend1') : IX.find(x => x.id === 'vend2'); to = { x: o.ux, z: o.uz }; act = { k, face: Math.atan2(o.x - o.ux, o.z - o.uz), dur: 4.2, ix: o.id }; }
+  else if (k === 'water') { const o = Math.random() < 0.5 ? IX.find(x => x.id === 'water1') : IX.find(x => x.id === 'water2'); to = { x: o.ux, z: o.uz }; act = { k, face: Math.atan2(o.x - o.ux, o.z - o.uz), dur: 3.2 }; }
+  else if (k === 'tv') { to = { x: pick([-3.2, 3.2]) + rnd(-0.4, 0.4), z: rnd(-10.2, -9.4) }; act = { k, face: Math.atan2(0 - to.x, -13.7 - to.z), dur: 7 }; }
+  else if (k === 'sweat') { const h = pick(HOTSPOTS); to = { x: h.x + rnd(-0.6, 0.6), z: h.z + rnd(-0.5, 0.5) }; act = { k, face: rnd(-3, 3), dur: rnd(18, 32) }; }
+  else if (k === 'ramen') { const s = SEATS.filter(s => s.kind === 'table' && !seatTaken(s)); if (s.length) { const st = pick(s); to = { x: st.px, z: st.pz }; act = { k, seat: st, face: st.r, dur: 13 }; st.npc = true; } }
+  if (!to) { const zid = pick(['hall', 'hall', 'corr', 'lobby']), z = ZMAP[zid]; to = { x: rnd(z.x0 + 2, z.x1 - 2), z: rnd(z.z0 + 1.5, z.z1 - 1.5) }; act = { k: 'wander', face: rnd(-3, 3), dur: rnd(3, 6) }; }
+  const path = navPath(p, to); if (!path) { n.wait = 2; return; }
+  n.route = path; n.act = act; n.st = 'go'; n.ri = 1;
+}
+function addAgent(opts, x, z) { const n = addNPC(opts, 'stand', null, x, z, 0, { agent: true, st: 'idle', wait: rnd(0.5, 3) }); n.ch.props = makeProps(n.ch); scene.add(n.ch.root); return n; }
+function agentTick(n, dt, t, cp) {
+  const ch = n.ch, q = ch.root.position, dq = Math.hypot(q.x - cp.x, q.z - cp.z), zq = zoneAt(q.x, q.z); if (zq) n.zq = zq;
+  const vis = dq < Q.cull + 10 && (!n.zq || ZG[n.zq.id].visible);
+  ch.root.visible = vis; setLod(ch, dq < 9);
+  if (n.st === 'idle') { n.wait -= dt; n.mode = 'stand'; if (vis) { applyPose(ch, POSES.stand, dt); ch.body.position.set(0, 0, 0); } if (n.wait <= 0) agentPlan(n); return; }
+  if (n.st === 'go') {
+    const tg = n.route[n.ri], dx = tg.x - q.x, dz = tg.z - q.z, d = Math.hypot(dx, dz), pp = player.root.position;
+    const blocked = Math.hypot(pp.x - q.x, pp.z - q.z) < 0.9, sp = blocked ? 0 : 1.15;
+    if (d < 0.25) { n.ri++; if (n.ri >= n.route.length) { n.st = 'act'; n.T = 0; n.mode = n.act.k === 'sweat' ? 'sweat' : n.act.k === 'ramen' ? 'ramen' : 'stand'; if (n.act.seat) q.set(n.act.seat.px, 0, n.act.seat.pz); setProps(ch, n.mode === 'ramen' ? 'ramen' : '', ''); return; } }
+    else { q.x += dx / d * sp * dt; q.z += dz / d * sp * dt; ch.root.rotation.y = lerpAngle(ch.root.rotation.y, Math.atan2(dx, dz), 1 - Math.exp(-6 * dt)); }
+    n.mode = 'walk';
+    if (vis) { ch.phase += sp * dt * 3.4; applyPose(ch, POSES.stand, dt); ch.body.scale.set(1, 1, 1); walkSwing(ch, sp > 0 ? 0.8 : 0); if (ch.blob) ch.blob.visible = true; }
+    return;
+  }
+  // 동작
+  n.T += dt; const A_ = n.act; ch.root.rotation.y = lerpAngle(ch.root.rotation.y, A_.face, 1 - Math.exp(-5 * dt));
+  const near = dq < 14, vol = near ? volAt(q) * 0.6 : 0;
+  if (A_.k === 'vend' || A_.k === 'water') {
+    if (A_.k === 'vend' && n.T > 0.3 && !A_.c) { A_.c = 1; if (vol > 0.03) SFX.coin(vol); }
+    if (A_.k === 'vend' && n.T > 0.9 && !A_.k2) { A_.k2 = 1; if (vol > 0.03) SFX.clunk(vol); }
+    const T = Math.max(0, n.T - (A_.k === 'vend' ? 1.3 : 0.2));
+    ch.props.can.material = A_.k === 'water' ? DRINKS.water.mat : DRINKS[A_.d || (A_.d = pick(['sikhye', 'banana', 'ion', 'coffee']))].mat;
+    ch.props.can.visible = T > 0 && T < 2.4;
+    if (vis) { applyPose(ch, T > 0 ? drinkPose(Math.min(T, 2.45)) : POSES.stand, dt, 12); ch.body.position.set(0, 0, 0); }
+    GULPS.forEach((c, i) => { if (T > c && !A_['g' + i]) { A_['g' + i] = 1; if (vol > 0.05) SFX.gulp(vol * 0.6); } });
+  } else if (A_.k === 'tv') {
+    if (vis) { applyPose(ch, POSES.stand, dt); ch.body.position.set(0, 0, 0); ch.headG.rotation.x = -0.15; }
+    if (n.T > 2.5 && !A_.ch && Math.random() < 0.7) { A_.ch = 1; changeTV(false); if (curZone.id === 'hall') toast('누가 TV 채널을 돌렸어요', 1.6); }
+  } else if (vis || A_.k === 'ramen') driveChar(ch, n.mode, n.T, t, dt, { near, flavor: (n.zq || ZMAP.hall).sweat, vol: vol * 0.6, ph: n.ph });
+  if (n.T > A_.dur) {
+    if (A_.seat) { A_.seat.npc = false; q.set(A_.seat.ex, 0, A_.seat.ez); }
+    ch.props.can.visible = false; setProps(ch, '', ''); ch.body.position.set(0, 0, 0); ch.body.scale.set(1, 1, 1);
+    n.st = 'idle'; n.wait = rnd(1, 4); n.mode = 'stand';
+  }
+}
+const AGENTS = [
+  addAgent({ ...SUITS[0], ...towelOf(0xd6ecff) }, 4, 14),
+  addAgent({ ...SUITS[1], hair: 0x3a2a20 }, -4, -16.5),
+  addAgent({ ...SUITS[0], hair: 0x1e1612 }, 20, -2),
+];
+
 // ───────────────────────── 실시간 연결 ─────────────────────────
 /* ---------------- 함께 걷기 (실시간 서버) ----------------
    서버: Cloudflare Worker /ws (Durable Object 방 하나당 최대 30명)
@@ -3505,6 +3878,7 @@ function openTut() { tutStep = 0; renderTut(); tutEl.hidden = false; }
 function closeTut(never) {
   tutEl.hidden = true; startAudio();
   const T = LS.get('jjimmung-tut', { n: 0, off: false }); T.n++; if (never) T.off = true; LS.set('jjimmung-tut', T);
+  setTimeout(onbStart, 700);
 }
 tutEl.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); haptic(8);
@@ -3731,20 +4105,22 @@ async function loadSignFonts(tries = 0) {
 
 // ───────────────────────── 시작 ─────────────────────────
 setZoneHUD(curZone); visitZone(curZone); drawTV(); cull();
-renderer.compile(scene, camera);
+renderer.compile(scene, camera); navBuild();
 requestAnimationFrame(() => {
   frame();
   window.__booted = true; clearTimeout(window.__bootT);
-  const L = document.getElementById('loader'); L.style.transition = 'opacity .35s'; L.style.opacity = 0; setTimeout(() => L.remove(), 400);
+  // 사라지는 동안에도 터치는 아래로 통과 (첫 터치가 묻히지 않게)
+  const L = document.getElementById('loader'); L.style.pointerEvents = 'none'; L.style.transition = 'opacity .35s'; L.style.opacity = 0; clearInterval(window.__tipT); setTimeout(() => L.remove(), 400);
   const T = LS.get('jjimmung-tut', { n: 0, off: false });
-  if (!T.off && T.n < 2 && !QS.has('notut')) openTut(); else setTimeout(() => showLED(zoneLabel(curZone)), 300);
+  if (!T.off && T.n < 2 && !QS.has('notut')) openTut();
+  else { setTimeout(() => showLED(zoneLabel(curZone)), 300); if (stats.sweat < 120 && !QS.has('noonb')) setTimeout(onbStart, 1500); }
 });
 loadSignFonts();
 
 // 테스트·디버그용
 window.__jjim = {
   player, state, stats, get today() { return today; }, me, remotes, net, SEATS, ZONES, Q, renderer, scene, setTier, setMode, standUp,
-  get zone() { return curZone.id; }, get acts() { return curActs.map(a => a.id + (a.disabled ? '(off)' : '')); },
+  get zone() { return curZone.id; }, NAV, setDest, clearDest, destOfZone, DEST, navPath, OB, ONB, onbStart, AGENTS, agentPlan, openMapSheet, get XPACC() { return XPACC; }, joy, RUN_SPEED, get acts() { return curActs.map(a => a.id + (a.disabled ? '(off)' : '')); },
   act(id) { const a = curActs.find(x => x.id === id && !x.disabled); if (a) { a.fn(); return true; } return false; },
   teleport(x, z, h) { if (MG.kind) mgClose(); if (TOGGLE[state.mode]) standUp(); else if (state.mode !== 'free') setMode('free'); player.root.position.set(x, 0, z); if (h !== undefined) { state.heading = h; camYaw = h + Math.PI; } camPos.set(x + Math.sin(camYaw) * 4, 3, z + Math.cos(camYaw) * 4); },
   makeStory, shareStory, prepareStory, openHelp, openTut, collide, WORLD,

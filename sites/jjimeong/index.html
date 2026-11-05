@@ -671,7 +671,9 @@ function buildLakeWorld() {
     const dx = -ex / rr, dz = -ez / rr, px = -dz, pz = dx, k = 1 - 6.2 / rr, cx = ex * k, cz = ez * k, ry = Math.atan2(dx, dz);
     const plat = makeRect(cx, cz, dx, dz, 2.2, 2.2); dockRects.push(plat);
     const bx = cx - dx * 2.2, bz = cz - dz * 2.2; let s = 0; while (inLake(bx - dx * s, bz - dz * s) && s < 30) s += 0.1; s += 1.3;
-    const wr = makeRect(bx - dx * s / 2, bz - dz * s / 2, dx, dz, s / 2, 0.65); dockRects.push(wr);
+    const wr = makeRect(bx - dx * s / 2, bz - dz * s / 2, dx, dz, s / 2, 0.65); // 보이는 판자
+    // 걷기 판정용은 좌대 판 안쪽으로 0.8m 겹치게 (이음매에 못 걷는 틈이 생기지 않도록)
+    dockRects.push(makeRect(bx - dx * (s / 2 - 0.4), bz - dz * (s / 2 - 0.4), dx, dz, s / 2 + 0.4, 0.65));
     const tex = woodTex.clone(); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(1, 2.2); tex.needsUpdate = true;
     const deck = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.14, 4.4), lam(0xffffff, { map: tex })); deck.position.set(cx, DOCK_Y - 0.07, cz); deck.rotation.y = ry; deck.receiveShadow = deck.castShadow = true; scene.add(deck);
     const t2 = woodTex.clone(); t2.wrapS = t2.wrapT = THREE.RepeatWrapping; t2.repeat.set(0.4, s / 1.2); t2.needsUpdate = true;

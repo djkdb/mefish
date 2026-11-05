@@ -270,6 +270,7 @@
   #mg.big .mgb { min-height: 56px; }
   body.mg-open #joy { display: none; }
   .sched { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; } .sched b { font-variant-numeric: tabular-nums; } .sched span { color: var(--dim); }
+  body.riding #quest, body.riding #nav { display: none !important; } /* 놀이기구 타는 동안 화면을 넓게 */
 </style>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
@@ -1765,7 +1766,7 @@ function drawMapOn(cv, big) {
 // ───────────────────────── 상호작용 장소 (가까이 가면 버튼) ─────────────────────────
 // 놀이기구 줄 · 노점 · 게임 부스 · 사진 스팟 · 벤치 · 풍선 · 매표소
 const SPOTS = [];
-for (const R of RIDE_LIST) SPOTS.push({ k: 'ride', R, x: R.q.x, z: R.q.z, r: 2.4, label: () => R.kind === 'bump' ? '범퍼카 타기' : `줄 서기 · ${R.name}` });
+for (const R of RIDE_LIST) SPOTS.push({ k: 'ride', R, x: R.q.x, z: R.q.z, r: 2.4, label: () => !D.band ? '자유이용권 받으러 가기' : R.kind === 'bump' ? '범퍼카 타기' : `줄 서기 · ${R.name}` });
 for (const S of STALLS) SPOTS.push({ k: 'stall', S, x: S.ux, z: S.uz, r: 2.0, label: () => `${S.name} 사기` });
 for (const B of BOOTHS) SPOTS.push({ k: 'booth', B, x: B.ux, z: B.uz, r: 2.2, label: () => `${B.name} 하기` });
 for (const P of PHOTO) SPOTS.push({ k: 'photo', P, x: P.ux, z: P.uz, r: 2.2, label: () => '사진 찍기' });
@@ -1786,7 +1787,7 @@ function doSpot(s) {
 // ───────────────────────── 놀이기구 타기 ─────────────────────────
 const nextDepart = R => { const ph = cycOf(R); return ph.run || ph.t >= R.load - 2 ? R.P / 1000 - ph.t : 0; };
 function joinQueue(R) {
-  if (!D.band) { toast('먼저 정문 매표소에서 자유이용권을 받아 주세요', 2.6); return; }
+  if (!D.band) { NAV.go({ x: -14, z: 58 }, '매표소', { auto: true }); toast('자유이용권을 받으러 매표소로 안내할게요', 2.6); return; } // 막다른 길 대신 바로 길 안내
   state.mode = 'queue'; state.ride = R; state.qT = 0; state.lastG = -1; NAV.stop && NAV.stop();
   player.root.position.set(R.q.x, 0, R.q.z); state.heading = R.q.face; player.root.rotation.y = R.q.face;
   SND.ui(); resetView(); view.yaw = 0;
@@ -1864,7 +1865,7 @@ const ridePose = R => { const ph = cycOf(R); return POSES[(ph.run && R.poseRun) 
 
 // ── 범퍼카 ──
 function bumpStart() {
-  if (!D.band) { toast('먼저 정문 매표소에서 자유이용권을 받아 주세요', 2.6); return; }
+  if (!D.band) { NAV.go({ x: -14, z: 58 }, '매표소', { auto: true }); toast('자유이용권을 받으러 매표소로 안내할게요', 2.6); return; } // 막다른 길 대신 바로 길 안내
   const B = BUMP; const c = B.makeCar(MY_HASH % 7); c.x = B.A.x0 + 1.5; c.z = 33; c.ry = Math.PI / 2; c.vx = c.vz = 0;
   for (const o of [...B.bots, ...B.remoteCars.values()]) if (Math.hypot(o.x - c.x, o.z - c.z) < 2.2) c.z += 2.4;
   c.seat.add(player.root); player.root.position.set(0, 0, 0); player.root.rotation.set(0, 0, 0); if (player.blob) player.blob.visible = false;
@@ -2726,6 +2727,7 @@ const clock = new THREE.Clock();
 let running = true, fps = 60, fpsN = 0, fpsT = 0, lastRenderMs = 0, timeAcc = 99, mapAcc = 0, eatT = 0;
 function frame() {
   if (!running) return; requestAnimationFrame(frame);
+  { const r = state.mode === 'ride' || state.mode === 'bump'; if (r !== document.body.classList.contains('riding')) document.body.classList.toggle('riding', r); } // 타는 동안엔 퀘스트·길 안내 숨김
   const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
   update(dt, t);
   const r0 = performance.now(); renderer.render(scene, camera); lastRenderMs = performance.now() - r0;

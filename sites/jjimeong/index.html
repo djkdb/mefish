@@ -2854,7 +2854,60 @@ function frame(now) {
   if (!window.__booted) boot();
   requestAnimationFrame(frame);
 }
+// ───── 깜빡임(z-fighting) 자동 정리 ─────
+// 같은 평면·같은 방향으로 겹친 면을 찾아, 가장 큰 면(벽·바닥)은 두고 나머지 물체를 아주 살짝(바닥 5mm·벽 3mm) 앞으로 띄워요.
+// 처음 한 번만 실행 (삼각형 수만 개 기준 수십 ms). 밀린 뒤에도 겹치는 쌍이 있으면 몇 번 더 반복해요.
+function fixCoplanar(root) { let total = 0; for (let i = 0; i < 4; i++) { const n = fixCoplanarPass(root); total += n; if (!n) break; } return total; }
+function fixCoplanarPass(root) {
+  root.updateMatrixWorld(true);
+  const planes = new Map(), meshArea = new Map();
+  root.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || !o.geometry || !o.geometry.attributes.position) return; // 숨겨 둔 먼 방 물체도 포함
+    const g = o.geometry, pos = g.attributes.position, idx = g.index, n = idx ? idx.count : pos.count; if (n > 60000) return;
+    const m = o.matrixWorld.elements;
+    const P = i => { const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i); return [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]]; };
+    for (let t = 0; t + 2 < n; t += 3) {
+      const a = P(idx ? idx.getX(t) : t), b = P(idx ? idx.getX(t + 1) : t + 1), c = P(idx ? idx.getX(t + 2) : t + 2);
+      const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+      let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const L = Math.hypot(nx, ny, nz); if (L < 1e-6) continue;
+      nx /= L; ny /= L; nz /= L;
+      const ax = Math.abs(nx) > 0.999 ? 0 : Math.abs(ny) > 0.999 ? 1 : Math.abs(nz) > 0.999 ? 2 : -1; if (ax < 0) continue;
+      const sg = (ax === 0 ? nx : ax === 1 ? ny : nz) > 0 ? 1 : -1, o1 = (ax + 1) % 3, o2 = (ax + 2) % 3;
+      const r = [Math.min(a[o1], b[o1], c[o1]), Math.max(a[o1], b[o1], c[o1]), Math.min(a[o2], b[o2], c[o2]), Math.max(a[o2], b[o2], c[o2])];
+      const key = ax + ':' + sg + ':' + Math.round(a[ax] * 400);
+      let L2 = planes.get(key); if (!L2) planes.set(key, L2 = []); L2.push({ o, r });
+      meshArea.set(o, (meshArea.get(o) || 0) + L / 2);
+    }
+  });
+  const rank = new Map(); // mesh → {ax, sg, k}
+  for (const [key, list] of planes) {
+    if (list.length < 2) continue;
+    const ax = +key.split(':')[0], sg = +key.split(':')[1], involved = new Set();
+    // 같은 평면에서 서로 다른 물체끼리 실제로 겹치는지
+    const byMesh = new Map(); for (const t of list) { let a = byMesh.get(t.o); if (!a) byMesh.set(t.o, a = [t.r[0], t.r[1], t.r[2], t.r[3]]); else { a[0] = Math.min(a[0], t.r[0]); a[1] = Math.max(a[1], t.r[1]); a[2] = Math.min(a[2], t.r[2]); a[3] = Math.max(a[3], t.r[3]); } }
+    const ms = [...byMesh.keys()]; if (ms.length < 2) continue;
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length && j < i + 400; j++) {
+      const A = list[i], B = list[j]; if (A.o === B.o) continue;
+      if (Math.min(A.r[1], B.r[1]) - Math.max(A.r[0], B.r[0]) > 0.005 && Math.min(A.r[3], B.r[3]) - Math.max(A.r[2], B.r[2]) > 0.005) { involved.add(A.o); involved.add(B.o); }
+    }
+    if (involved.size < 2) continue;
+    const anchor = o => (o.name || '').startsWith('batch:'); // 건물 전체 벽 묶음은 기준(안 움직임)
+    const sorted = [...involved].sort((p, q) => (anchor(q) - anchor(p)) || (meshArea.get(q) || 0) - (meshArea.get(p) || 0));
+    sorted.forEach((o, k) => { // 평면마다(축마다) 따로: 가장 큰 면은 그대로, 나머지는 순서대로 앞으로
+      if (!k || anchor(o)) return; let off = rank.get(o); if (!off) rank.set(o, off = [0, 0, 0]);
+      const want = sg * (ax === 1 ? 0.005 : 0.003) * Math.min(k, 4); if (Math.abs(want) > Math.abs(off[ax])) off[ax] = want;
+    });
+  }
+  const v = new THREE.Vector3();
+  for (const [o, off] of rank) {
+    o.getWorldPosition(v); v.x += off[0]; v.y += off[1]; v.z += off[2];
+    if (o.parent) o.parent.worldToLocal(v); o.position.copy(v); o.updateMatrix(); o.updateMatrixWorld(true);
+  }
+  return rank.size;
+}
+
 function boot() {
+  { const t0 = performance.now(); window.__zfix = fixCoplanar(scene); window.__zfixMs = Math.round(performance.now() - t0); }
   window.__booted = true;
   const ld = $('loading'); ld.style.transition = 'opacity .35s'; ld.style.opacity = '0'; setTimeout(() => ld.remove(), 400);
   let off = false; try { off = localStorage.getItem(TUT_KEY) === '1'; } catch (e) { }
@@ -2875,7 +2928,7 @@ if (WEB && 'serviceWorker' in navigator) addEventListener('load', () => navigato
 if (document.fonts) document.fonts.load('800 40px "Pretendard Variable"').catch(() => { });
 
 // 테스트·디버그용
-window.__jjimeong = { camBench: n => { const t0 = performance.now(); for (let i = 0; i < n; i++) { blkAcc = i % 25 === 0 ? 9 : 0; updateCamera(0.016); } return (performance.now() - t0) / n; }, camProbe: (yaw, pitch) => { camYaw = yaw; camPitch = pitch; blkAcc = 9; updateCamera(10); const c = camera.position, head = new THREE.Vector3(P.pos.x, P.pos.y + 1.65, P.pos.z), d = c.clone().sub(head), len = d.length();
+window.__jjimeong = { scene, camBench: n => { const t0 = performance.now(); for (let i = 0; i < n; i++) { blkAcc = i % 25 === 0 ? 9 : 0; updateCamera(0.016); } return (performance.now() - t0) / n; }, camProbe: (yaw, pitch) => { camYaw = yaw; camPitch = pitch; blkAcc = 9; updateCamera(10); const c = camera.position, head = new THREE.Vector3(P.pos.x, P.pos.y + 1.65, P.pos.z), d = c.clone().sub(head), len = d.length();
     const rc = new THREE.Raycaster(head, d.normalize(), 0.05, len); rc.camera = camera; const hits = rc.intersectObjects(scene.children, true).filter(h => { let o = h.object; if (o.isSprite || o.isPoints || o.isLine || o.isLineSegments) return false; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (!m || m.transparent || m.visible === false || !o.visible) return false; while (o) { if (o === player.root) return false; o = o.parent; } return true; });
     return { pos: c.toArray().map(v => +v.toFixed(2)), dist: +len.toFixed(2), inside: nearBlk.filter(o => !o.thin && blkAt(o, c.x, c.y, c.z) && !blkAt(o, head.x, head.y, head.z)).map(o => Object.keys(o)[0] + (o.fade || '')).join(','), headIn: nearBlk.some(o => !o.under && blkAt(o, head.x, head.y, head.z)), floor: +camFloor(c.x, c.z).toFixed(2), hits: hits.slice(0, 3).map(h => (h.object.geometry?.type || '?') + (h.object.geometry?.parameters ? JSON.stringify(Object.values(h.object.geometry.parameters).slice(0, 3).map(v => +(+v).toFixed(2))) : '') + '@' + h.distance.toFixed(1) + '[' + h.point.toArray().map(v => v.toFixed(1)) + ']'), fade: Object.keys(camFade).filter(k => camFade[k].hit).join(',') }; },
   camInfo: () => ({ fov: camera.fov, k: camFit.k, pos: camera.position.toArray().map(v => +v.toFixed(2)), blocked: !!camBlocked(camera.position.x, camera.position.y, camera.position.z), fade: [camFade.roof.a, camFade.pav.a] }), bobScreen: () => { const v = bobber.position.clone(); v.y += WATERLINE * PL.bobScale; v.project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, get T() { return T; }, setCamYaw: y => { camYaw = y; }, get wx() { return env.wx; }, fight, get prog() { return prog; }, addXP, levelInfo, todaysMissions, missionState, missionEvent, weatherAt, weatherWindows, BOSS, BAITS, bait, cycleBait, boardState, PID, rollSpecies, rollLen, openRanking, openStyle, get together() { return together; }, setBait: i => { baitI = i; updateBaitChip(); }, dbg: { inLake, inIsland, dockRects, inRect, obstacles, seatTaken, LAKE }, F, P, spots, npcs, onAct, env, remotes, net, ME, dynHoles, sled, QUAL, SLED, ISLAND, store, renderCard, renderStory, dexPhoto, shareStory, openTut, openMenu, openDex, openHelp,

@@ -634,7 +634,7 @@ function makeBobber(chemiColor = 0xaaff66) {
   const cg = glow(chemiColor, 0.55); cg.position.y = 0.64; g.add(cg);
   const top = new THREE.Object3D(); top.position.y = 0.64; g.add(top);
   // 물속에 잠긴 몸통: 물빛이 도는 흐릿한 복제 (물 위에 겹쳐 그려 '반쯤 잠긴' 느낌)
-  const um = new THREE.MeshBasicMaterial({ color: 0x8fbad0, transparent: true, opacity: 0.3, depthTest: false, depthWrite: false });
+  const um = new THREE.MeshBasicMaterial({ color: 0x8fbad0, transparent: true, opacity: 0.24, depthTest: false, depthWrite: false });
   const ub = new THREE.Mesh(body.geometry, um), ul = new THREE.Mesh(bulb.geometry, um); ul.scale.y = 1.9; ul.position.y = -0.05; ub.renderOrder = ul.renderOrder = 3; g.add(ub, ul);
   g.scale.setScalar(PL.bobScale); g.visible = false; scene.add(g);
   // 수면에 닿은 곳: 어두운 메니스커스 + 밝은 링 + 짧은 반사 (찌를 따라다니지만 높이는 수면에 고정)
@@ -654,7 +654,7 @@ function updateBobberWater() {
   for (const b of bobbers) {
     const u = b.userData, x = b.position.x, z = b.position.z, wy = wy0 + waveH(x, z, T);
     const inWater = b.visible && Math.abs(b.position.y + WATERLINE * s - wy) < 0.9 * s;
-    u.wl.visible = inWater; u.under[0].visible = u.under[1].visible = inWater;
+    u.wl.visible = inWater; u.under[0].visible = u.under[1].visible = inWater && !PL.ice; // 얼음 구멍은 얼음 밑이 비치면 안 돼요
     if (!inWater) continue;
     const k = 1 + Math.sin(T * 2.2 + u.ph) * 0.06;
     u.wl.position.set(x, wy + 0.006, z); u.ring.scale.setScalar(0.13 * k * (PL.ice ? 0.9 : 1)); u.ring.material.opacity = 0.5 + 0.12 * Math.sin(T * 2.2 + u.ph);

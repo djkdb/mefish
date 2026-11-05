@@ -282,6 +282,14 @@ const GEO = {
   apron: new THREE.BoxGeometry(0.4, 0.5, 0.05),
   blob: new THREE.CircleGeometry(0.42, 20),
 };
+// 찜질복: 진갈색 상의+베이지 깃 / 베이지 상의+진갈색 깃 (교차 V넥, 무릎 반바지)
+const SUITS = [
+  { shirt: 0x6b4128, shorts: 0x5c3822, trim: 0xd2ab80 },
+  { shirt: 0xd2ab80, shorts: 0xa87a4e, trim: 0x6b4128 },
+];
+const suit = i => SUITS[(i | 0) % SUITS.length];
+const collarGeo = new THREE.BoxGeometry(1, 0.05, 0.016);
+const neckGeo = new THREE.TorusGeometry(0.155, 0.02, 6, 24);
 const matCache = new Map();
 function lam(color) {
   if (!matCache.has(color)) matCache.set(color, new THREE.MeshLambertMaterial({ color }));
@@ -300,6 +308,18 @@ function makeCharacter(o) {
   const add = (geo, mat, x, y, z, parent = body) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; };
 
   add(GEO.torso, shirtMat, 0, 0.88, 0);
+  if (o.trim) { // 교차 V넥 깃: 오른쪽 어깨 → 왼쪽 가슴 아래로 깊게, 왼쪽 깃은 가운데에서 만남
+    const tm = lam(o.trim);
+    const band = (x1, y1, x2, y2) => {
+      const len = Math.hypot(x2 - x1, y2 - y1), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      const rr = 0.25 + (0.21 - 0.25) * ((my - 0.59) / 0.58);
+      const m = add(collarGeo, tm, mx, my, Math.sqrt(Math.max(0, rr * rr - mx * mx)) + 0.006);
+      m.scale.x = len; m.rotation.z = Math.atan2(y2 - y1, x2 - x1); m.rotation.y = -Math.asin(Math.max(-0.9, Math.min(0.9, mx / rr))) * 0.8;
+    };
+    band(-0.115, 1.155, 0.035, 0.95); // 깊게 내려가는 깃(위에 겹침)
+    band(0.115, 1.155, 0.015, 0.975); // 반대쪽 깃 — 아래에서 만나 V자
+    const n = add(neckGeo, tm, 0, 1.165, -0.01); n.rotation.x = Math.PI / 2; n.scale.set(1, 0.92, 1);
+  }
   add(GEO.hip, shortsMat, 0, 0.62, 0);
   const legs = [];
   for (const s of [1, -1]) {
@@ -417,22 +437,22 @@ function onMat(opts, kind, mx, mz) {
   if (kind === 'sitTV') return addNPC(opts, kind, mx, mz - 0.2, Math.PI);
   return addNPC(opts, kind, mx, mz - 0.95, Math.PI); // 머리를 베개 쪽(+z)으로
 }
-onMat({ shirt: 0xf29bb5, shorts: 0xf29bb5, towel: 0xffd3dd, towelLine: 0xeeaabb }, 'spread', -5, -1);
-onMat({ shirt: 0x8fb8de, shorts: 0x8fb8de, hair: 0x2a2018 }, 'sitTV', -1, -1);
-onMat({ shirt: 0xc9b36a, shorts: 0xc9b36a, hair: 0x8a8580 }, 'side', 3, -1);
-onMat({ shirt: 0x8fd1b8, shorts: 0x8fd1b8, towel: 0xfff1a8, towelLine: 0xe8d47a }, 'lieBack', 1, 3);
-onMat({ shirt: 0xf29bb5, shorts: 0xf29bb5, towel: 0xfffaf2 }, 'sitTV', -3, 3);
-onMat({ shirt: 0x8fb8de, shorts: 0x8fb8de, hair: 0x3a2a20 }, 'lieBack', 5, 3);
-onMat({ shirt: 0xc9b36a, shorts: 0xc9b36a, towel: 0xd6ecff, towelLine: 0xa9cbe8 }, 'spread', -5, 7);
-onMat({ shirt: 0xf6b07a, shorts: 0xf6b07a, hair: 0x1e1612 }, 'sitTV', 3, 7);
+onMat({ ...SUITS[0], towel: 0xffd3dd, towelLine: 0xeeaabb }, 'spread', -5, -1);
+onMat({ ...SUITS[1], hair: 0x2a2018 }, 'sitTV', -1, -1);
+onMat({ ...SUITS[0], hair: 0x8a8580 }, 'side', 3, -1);
+onMat({ ...SUITS[1], towel: 0xfff1a8, towelLine: 0xe8d47a }, 'lieBack', 1, 3);
+onMat({ ...SUITS[0], towel: 0xfffaf2 }, 'sitTV', -3, 3);
+onMat({ ...SUITS[1], hair: 0x3a2a20 }, 'lieBack', 5, 3);
+onMat({ ...SUITS[1], towel: 0xd6ecff, towelLine: 0xa9cbe8 }, 'spread', -5, 7);
+onMat({ ...SUITS[0], hair: 0x1e1612 }, 'sitTV', 3, 7);
 // 걸어 다니는 손님
 const loop = [new THREE.Vector3(-6.7, 0, -3.4), new THREE.Vector3(6.7, 0, -3.4), new THREE.Vector3(6.7, 0, 9.4), new THREE.Vector3(-6.7, 0, 9.4)];
-const walker1 = addNPC({ shirt: 0x8fb8de, shorts: 0x8fb8de, hair: 0x2a2018 }, 'walk', -6.7, 3, 0, { wp: 3, speed: 0.75 });
-const walker2 = addNPC({ shirt: 0xf29bb5, shorts: 0xf29bb5, towel: 0xfffaf2 }, 'walk', 6.7, 2, 0, { wp: 1, speed: 0.6 });
+const walker1 = addNPC({ ...SUITS[1], hair: 0x2a2018 }, 'walk', -6.7, 3, 0, { wp: 3, speed: 0.75 });
+const walker2 = addNPC({ ...SUITS[0], towel: 0xfffaf2 }, 'walk', 6.7, 2, 0, { wp: 1, speed: 0.6 });
 // 매점 아주머니, 얼음방 손님, 불가마 손님
 addNPC({ shirt: 0xf6b07a, shorts: 0x6a4a3a, hair: 0x3a2418, perm: true, apron: 0xd14d4d }, 'cashier', 16.8, 3.6, -Math.PI / 2);
-addNPC({ shirt: 0x8fb8de, shorts: 0x8fb8de, hair: 0x2a2018 }, 'cool', 13.4, -12.2, Math.PI * 0.85);
-addNPC({ shirt: 0xf29bb5, shorts: 0xf29bb5, towel: 0xffd3dd, towelLine: 0xeeaabb }, 'sitSweat', KILN.x - 2.6, KILN.z - 1.2, Math.PI * 0.62);
+addNPC({ ...SUITS[0], hair: 0x2a2018 }, 'cool', 13.4, -12.2, Math.PI * 0.85);
+addNPC({ ...SUITS[1], towel: 0xffd3dd, towelLine: 0xeeaabb }, 'sitSweat', KILN.x - 2.6, KILN.z - 1.2, Math.PI * 0.62);
 
 // 걷는 손님 손에 식혜 캔
 const canLabelTex = canvasTex(128, 128, (g, w, h) => {
@@ -777,29 +797,28 @@ let fanBlades;
 // ───────────────────────── 내 닉네임·옷 색 (localStorage 에 보관) ─────────────────────────
 const NICK_A = ['양머리', '뜨끈한', '노곤한', '식혜러버', '땀범벅', '계란장인', '졸린', '개운한'];
 const NICK_N = ['손님', '곰', '고양이', '판다', '감자', '호빵'];
-const CLOTH = [0xff8a3d, 0xf29bb5, 0x8fb8de, 0x8fd1b8]; // 주황·분홍·하늘·민트 찜질복
 const TOWEL = [0xfff6ea, 0xffd3dd, 0xfff1a8, 0xd6ecff];
 const pick = a => a[(Math.random() * a.length) | 0];
 function sanitizeLook(l) {
-  const c = Number(l && l.c), t = Number(l && l.t);
-  return { c: Number.isFinite(c) ? (c & 0xffffff) : 0x8fb8de, t: Number.isFinite(t) ? (t & 0xffffff) : 0xfff6ea };
+  const u = Number(l && l.u), t = Number(l && l.t);
+  return { u: Number.isInteger(u) && u >= 0 && u < SUITS.length ? u : (Math.random() * SUITS.length) | 0, t: TOWEL.includes(t) ? t : TOWEL[0] };
 }
 const towelLineOf = t => new THREE.Color(t).multiplyScalar(0.86).getHex();
 let me = null;
 try {
   const v = JSON.parse(localStorage.getItem('jjimmung-me-v1') || 'null');
-  if (v && typeof v.name === 'string' && v.name.trim()) me = { name: v.name.trim().slice(0, 16), look: sanitizeLook(v.look) };
+  if (v && typeof v.name === 'string' && v.name.trim()) { me = { name: v.name.trim().slice(0, 16), look: sanitizeLook(v.look) }; localStorage.setItem('jjimmung-me-v1', JSON.stringify(me)); }
 } catch (e) {}
 if (!me) {
-  me = { name: `${pick(NICK_A)} ${pick(NICK_N)}${10 + ((Math.random() * 90) | 0)}`, look: { c: pick(CLOTH), t: pick(TOWEL) } };
+  me = { name: `${pick(NICK_A)} ${pick(NICK_N)}${10 + ((Math.random() * 90) | 0)}`, look: { u: (Math.random() * SUITS.length) | 0, t: pick(TOWEL) } };
   try { localStorage.setItem('jjimmung-me-v1', JSON.stringify(me)); } catch (e) {}
 }
 
 // ───────────────────────── 플레이어 ─────────────────────────
-const player = makeCharacter({ shirt: me.look.c, shorts: me.look.c, towel: me.look.t, towelLine: towelLineOf(me.look.t), blob: true, ownSkin: true });
+const player = makeCharacter({ ...suit(me.look.u), towel: me.look.t, towelLine: towelLineOf(me.look.t), blob: true, ownSkin: true });
 player.root.position.set(0, 0, 11.5); player.root.rotation.y = Math.PI;
 const SKIN0 = new THREE.Color(0xf3cfa9), SKIN_HOT = new THREE.Color(0xff9a80), SKIN_COLD = new THREE.Color(0x92b6ff);
-const SHIRT0 = new THREE.Color(me.look.c), SHIRT_COLD = SHIRT0.clone().lerp(new THREE.Color(0x9fc0ff), 0.3);
+const SHIRT0 = new THREE.Color(suit(me.look.u).shirt), SHIRT_COLD = SHIRT0.clone().lerp(new THREE.Color(0x9fc0ff), 0.3);
 const heldEgg = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10).scale(1, 1.3, 1), new THREE.MeshLambertMaterial({ color: 0x9a6438 }));
 heldEgg.position.set(0, -0.05, 0.06); heldEgg.visible = false; player.handR.add(heldEgg);
 const heldCan = new THREE.Mesh(canGeo, canMat); heldCan.position.set(0, -0.06, 0.05); heldCan.visible = false; player.handR.add(heldCan);
@@ -1201,13 +1220,13 @@ function addRemote(p) {
   if (!p || !p.id) return;
   removeRemote(p.id);
   const look = sanitizeLook(p.look), name = String(p.name || '손님').slice(0, 16);
-  const ch = makeCharacter({ shirt: look.c, shorts: look.c, towel: look.t, towelLine: towelLineOf(look.t), blob: true, ownSkin: true });
+  const ch = makeCharacter({ ...suit(look.u), towel: look.t, towelLine: towelLineOf(look.t), blob: true, ownSkin: true });
   const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTexture(name), transparent: true, depthWrite: false }));
   label.scale.set(2.3, 0.385, 1); label.renderOrder = 5; scene.add(label);
   const egg = new THREE.Mesh(heldEgg.geometry, new THREE.MeshLambertMaterial({ color: 0x9a6438 }));
   egg.position.copy(heldEgg.position); egg.visible = false; ch.handR.add(egg);
   const can = new THREE.Mesh(canGeo, canMat); can.position.copy(heldCan.position); can.visible = false; ch.handR.add(can);
-  const r = { id: p.id, name, ch, label, egg, can, x: 0, z: 11.5, r: Math.PI, a: '', shot: null, speed: 0, shirt0: new THREE.Color(look.c) };
+  const r = { id: p.id, name, ch, label, egg, can, x: 0, z: 11.5, r: Math.PI, a: '', shot: null, speed: 0, shirt0: new THREE.Color(suit(look.u).shirt) };
   remotes.set(p.id, r);
   applyRemoteState(r, p.s, true);
   return r;

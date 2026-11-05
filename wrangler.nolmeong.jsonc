@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // 놀멍 (놀이공원)
+  "name": "nolmeong",
+  "main": "server/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": { "directory": "./sites/nolmeong", "binding": "ASSETS" },
+  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }, { "name": "BOARDS", "class_name": "Board" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }, { "tag": "v2", "new_sqlite_classes": ["Board"] }],
+  "vars": {
+    "SITES": "park"
+  },
+  "observability": { "enabled": true }
+}

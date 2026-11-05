@@ -7,7 +7,9 @@
     "dev:jjim": "wrangler dev -c wrangler.jjimmung.jsonc --port 8788",
     "deploy:fish": "wrangler deploy -c wrangler.jjimeong.jsonc",
     "deploy:jjim": "wrangler deploy -c wrangler.jjimmung.jsonc",
-    "deploy": "npm run deploy:fish && npm run deploy:jjim"
+    "deploy": "npm run deploy:fish && npm run deploy:jjim && npm run deploy:park",
+    "dev:park": "wrangler dev -c wrangler.nolmeong.jsonc --port 8789",
+    "deploy:park": "wrangler deploy -c wrangler.nolmeong.jsonc"
   },
   "devDependencies": {
     "wrangler": "4.157.0"

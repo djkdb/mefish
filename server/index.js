@@ -1,6 +1,6 @@
 // 찌멍 · 찜멍 실시간 서버
 // - Worker 하나가 화면 파일(sites/<이름>/)과 실시간 연결(/ws)을 함께 맡아요.
-//   찌멍(jjimeong)과 찜멍(jjimmung)은 같은 서버 코드로 따로 배포해요 (wrangler.<이름>.jsonc).
+//   찌멍(jjimeong)·찜멍(jjimmung)·놀멍(nolmeong)은 같은 서버 코드로 따로 배포해요 (wrangler.<이름>.jsonc).
 // - 방 하나 = Durable Object 하나. WebSocket Hibernation API를 써서
 //   아무도 말을 안 보낼 때는 잠들어 있어요(무료 플랜 친화적).
 // - 한 방에 30명이 차면 다음 방으로 자동 배정. ?room=이름 이면 그 방으로.
@@ -56,6 +56,7 @@ const BOARD_KINDS = {
   lake: { big: [1, 200], count: [1, 500] },        // 오늘 가장 큰 물고기(cm, x=어종) · 오늘 낚은 마릿수
   ice:  { big: [1, 200], smelt: [1, 2000] },       // 가장 큰 물고기 · 빙어 마릿수
   jjim: { char: [1, 3600], sweat: [1, 86400], egg: [1, 1000] }, // 숯가마 버티기(초) · 오늘 땀(초) · 계란
+  park: { shoot: [1, 5000], bump: [1, 500], rides: [1, 300] },  // 사격 점수 · 범퍼카 박기 · 오늘 탄 놀이기구 수
 };
 const kstDate = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });

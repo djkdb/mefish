@@ -299,7 +299,7 @@ const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator
 const SITE_HOST = 'jjimmung.tjdwns2121.workers.dev';
 const SITE_URL = (location.protocol === 'https:' || location.protocol === 'http:') && !/localhost|127\.0\.0\.1/.test(location.host)
   ? location.origin + location.pathname.replace(/index\.html$/, '') : `https://${SITE_HOST}/`;
-const haptic = (ms = 12) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+const haptic = (ms = 12) => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} }; // 첫 터치 전엔 진동 안 함(브라우저 경고 방지)
 // 시간: 한국 날짜·시각 기준 (테스트용 ?toff=ms 로 시계를 옮길 수 있어요)
 let timeOffset = Number(QS.get('toff')) || 0;
 const nowMs = () => Date.now() + timeOffset;

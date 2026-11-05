@@ -1,8 +1,8 @@
 // 찜멍 서비스 워커
 // - HTML: 네트워크 우선 (업데이트가 바로 보이게), 실패하면 저장본
-// - three.js(버전 고정)·글꼴·아이콘: 저장본 우선 → 두 번째부터 빠르게, 오프라인에서도 혼자 모드
+// - three.js(버전 고정)·글꼴·아이콘·안내 방송 음성: 저장본 우선 → 두 번째부터 빠르게, 오프라인에서도 혼자 모드
 // - /ws(실시간 연결)와 다른 요청은 건드리지 않아요.
-const VER = 'jjimmung-v1';
+const VER = 'jjimmung-v2';
 const PRECACHE = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 const PINNED = [/^https:\/\/cdn\.jsdelivr\.net\/npm\/three@0\.170\.0\//, /^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard@v1\.3\.9\//];
 
@@ -24,7 +24,7 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(key).then(r => r || caches.match(req, { ignoreSearch: true })).then(r => r || caches.match('./'))));
     return;
   }
-  if (PINNED.some(r => r.test(req.url)) || (same && /\/icons\/|manifest\.webmanifest$|og\.jpg$/.test(url.pathname))) {
+  if (PINNED.some(r => r.test(req.url)) || (same && /\/icons\/|\/audio\/|manifest\.webmanifest$|og\.jpg$/.test(url.pathname))) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok || res.type === 'opaque') { const cp = res.clone(); caches.open(VER).then(c => c.put(req, cp)); }
       return res;

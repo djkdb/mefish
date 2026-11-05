@@ -2841,14 +2841,22 @@ function mgMsg(m) { MG.msg = m; MG.msgT = 1.2; }
 // 1) 숯가마 버티기
 function startChar() {
   if (state.mode !== 'sweat') doSweat();
-  MG.heat = 0; MG.ring = 0; MG.cool = 0;
-  mgOpen('char', '숯가마 버티기', '후~ (링이 맞을 때 탭)');
+  MG.heat = 0; MG.ring = 0; MG.ph = 0; MG.cool = 0; MG.lastCyc = -1; MG.lock = 0;
+  mgOpen('char', '숯가마 버티기', '후~ (링이 커지며 초록일 때 탭)');
 }
+// 난이도: 시간이 갈수록 열기가 빨리 오르고, 숨 한 번의 효과는 줄고, 호흡이 빨라지고 불규칙해지고, 초록 구간이 좁아져요.
+//  - 숨(들이쉬기 = 링이 커질 때) 한 번에 한 번만 인정, 헛탭은 '콜록' +8 열기 · 0.5초 잠김
+//  - 대략: 처음 20~40초 · 보통 1분 · 잘하면 2분 · 완벽해도 3분 남짓
+const charRing = () => 0.55 + 0.45 * Math.sin(MG.ph * Math.PI * 2);
+const charRising = () => Math.cos(MG.ph * Math.PI * 2) > 0;
+const charTol = () => Math.max(0.04, 0.07 - MG.t * 0.00015);
+const charInWindow = () => charRising() && Math.abs(charRing() - 0.86) < charTol() && Math.floor(MG.ph) !== MG.lastCyc;
 function charTap() {
-  if (MG.cool > 0) return; MG.cool = 0.3;
-  const r = 0.55 + 0.45 * Math.sin(MG.ring * Math.PI * 2 / 2.4);
-  if (Math.abs(r - 0.86) < 0.07) { MG.heat = Math.max(0, MG.heat - 16); mgMsg('후~'); SFX.breath(); SFX.good(); emitPuff(player); haptic(10); }
-  else { MG.heat = Math.min(100, MG.heat + 5); mgMsg('헉!'); SFX.bad(); }
+  if (MG.lock > 0) return;
+  if (charInWindow()) {
+    MG.lastCyc = Math.floor(MG.ph); MG.heat = Math.max(0, MG.heat - Math.max(7, 13 - 0.02 * MG.t));
+    mgMsg('후~'); SFX.breath(); SFX.good(); emitPuff(player); haptic(10);
+  } else { MG.heat = Math.min(100, MG.heat + 8); MG.lock = 0.5; mgMsg('콜록!'); SFX.bad(); haptic([20, 30, 20]); }
 }
 function endChar(reason) {
   const secs = Math.floor(MG.t); mgClose();
@@ -2893,7 +2901,8 @@ function mgTick(dt, t) {
   MG.t += dt; MG.msgT -= dt; MG.cool -= dt;
   if (MG.kind === 'char') {
     if (state.mode !== 'sweat') { endChar('quit'); return; }
-    MG.ring += dt; MG.heat += (2.6 + MG.t * 0.012) * dt; GM.temp += 0.03 * dt;
+    const per = Math.max(1.4, 2.4 - 0.005 * MG.t), sp = 1 + 0.22 * Math.sin(MG.t * 0.9); // 호흡: 점점 빠르고 불규칙
+    MG.ph += dt * sp / per; MG.lock -= dt; MG.heat += (3.2 + 0.03 * MG.t) * dt; GM.temp += 0.03 * dt;
     if (MG.heat >= 100) { endChar('limit'); return; }
   } else if (MG.kind === 'egg') {
     const per = Math.max(0.55, 1.25 * Math.pow(0.93, MG.streak));
@@ -2915,9 +2924,10 @@ function drawMg() {
     const gr = g.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#ff9a40'); gr.addColorStop(1, '#d01818');
     g.fillStyle = gr; g.fillRect(bx, by, bw * MG.heat / 100, 18 * k);
     g.fillStyle = '#a8a29e'; g.font = `600 ${11 * k}px ${FONT}`; g.fillText('열기', bx, by - 10 * k);
-    const cx = W - 66 * k, cy = H / 2, R = 36 * k, r = 0.55 + 0.45 * Math.sin(MG.ring * Math.PI * 2 / 2.4);
+    const cx = W - 66 * k, cy = H / 2, R = 36 * k, r = charRing();
     g.strokeStyle = '#57534e'; g.lineWidth = 2 * k; g.setLineDash([4 * k, 4 * k]); g.beginPath(); g.arc(cx, cy, R * 0.86, 0, 7); g.stroke(); g.setLineDash([]);
-    g.strokeStyle = Math.abs(r - 0.86) < 0.07 ? '#5fd38a' : '#f5f5f4'; g.lineWidth = 4 * k; g.beginPath(); g.arc(cx, cy, R * r, 0, 7); g.stroke();
+    g.strokeStyle = MG.lock > 0 ? '#d01818' : charInWindow() ? '#5fd38a' : '#f5f5f4'; g.lineWidth = 4 * k; g.beginPath(); g.arc(cx, cy, R * r, 0, 7); g.stroke();
+    if (MG.lock <= 0 && charRising() && Math.floor(MG.ph) !== MG.lastCyc) { g.fillStyle = '#a8a29e'; g.font = `600 ${10 * k}px ${FONT}`; g.textAlign = 'center'; g.fillText('들이쉬기', cx, cy + R + 10 * k); g.textAlign = 'left'; }
   } else if (MG.kind === 'egg') {
     stat.textContent = `연속 ${MG.streak} · 오늘 최고 ${D.eggBest}`;
     const bx = 12 * k, bw = W - 24 * k, by = H / 2 - 12 * k, [a, b] = eggZone();
@@ -4310,6 +4320,108 @@ window.__jjim = {
   addEventListener('pointercancel', up, { capture: true, passive: true });
   addEventListener('keydown', function (e) { if (/^(Key[WASD]|Arrow(Up|Down|Left|Right))$/.test(e.code) && el.classList.contains('on')) mark('L'); }, true);
   window.__coach = { get moved() { return moved; }, get looked() { return looked; }, get on() { return el.classList.contains('on'); } };
+})();
+</script>
+
+<!-- ───── 앱으로 보기 배너 (세 사이트 공통) ─────
+  위쪽에 앱 배너처럼 떠요. 환경별로: 안드로이드 크롬 = 바로 설치 · 아이폰 사파리 = 방법 안내 ·
+  카카오톡 = 바깥 브라우저로 바로 열기 · 인스타 등 = 안드로이드는 크롬으로 열기 시도, 아이폰은 안내 + 링크 복사.
+  ✕ 를 누르면 3일 동안 안 보여요. 앱으로 설치했거나 앱으로 열면 안 보여요.
+-->
+<style id="appbar-css">
+  #appbar { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 8px); transform: translate(-50%, -12px); z-index: 45; width: min(calc(100vw - 16px), 420px);
+    display: none; flex-direction: column; border-radius: 10px; background: #15171b; border: 1px solid rgba(255, 255, 255, .16); box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+    color: #fff; font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; opacity: 0; transition: opacity .3s, transform .3s; }
+  #appbar.on { display: flex; }
+  #appbar.in { opacity: 1; transform: translate(-50%, 0); }
+  #appbar .row { display: flex; align-items: center; gap: 10px; padding: 8px 6px 8px 10px; }
+  #appbar img { width: 42px; height: 42px; border-radius: 10px; flex: none; }
+  #appbar .tx { flex: 1; min-width: 0; }
+  #appbar .tx b { display: block; font-size: 15px; font-weight: 800; line-height: 1.25; }
+  #appbar .tx small { display: block; font-size: 12px; color: #a8a29e; line-height: 1.35; margin-top: 1px; }
+  #appbar .go { flex: none; height: 40px; padding: 0 14px; border-radius: 8px; border: 0; background: var(--appbar-acc, #ff4a1c); color: #fff; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  #appbar .x { flex: none; width: 40px; height: 40px; border: 0; background: transparent; color: #a8a29e; cursor: pointer; display: grid; place-items: center; }
+  #appbar .x svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.4; fill: none; }
+  #appbar .how { display: none; border-top: 1px solid rgba(255, 255, 255, .1); padding: 10px 12px 12px; font-size: 14px; line-height: 1.55; color: #e7e5e4; }
+  #appbar .how.on { display: block; }
+  #appbar .how b { color: #fff; }
+  #appbar .how .copy { margin-top: 8px; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .25); background: transparent; color: #fff; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
+  body.tut-open #appbar { display: none !important; }
+</style>
+<div id="appbar" role="dialog" aria-label="앱으로 보기" style="--appbar-acc: #d9481f">
+  <div class="row">
+    <img src="icons/icon-192.png" alt="">
+    <div class="tx"><b>앱으로 보기</b><small class="sub">홈 화면에 추가하면 전체 화면으로 열려요</small></div>
+    <button class="go">앱으로 보기</button>
+    <button class="x" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="how"></div>
+</div>
+<script>
+(function () {
+  var bar = document.getElementById('appbar'); if (!bar) return;
+  var KEY = 'appbar-hide-until', UA = navigator.userAgent || '';
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  var hideUntil = 0; try { hideUntil = +localStorage.getItem(KEY) || 0; } catch (e) {}
+  if (standalone || Date.now() < hideUntil || /[?&](notut|noappbar)\b/.test(location.search) || location.protocol === 'file:') { bar.remove(); return; }
+  var isIOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(UA), isKakao = /KAKAOTALK/i.test(UA), isInApp = isKakao || /Instagram|FBAN|FBAV|FB_IAB|NAVER|Line\/|DaumApps|everytimeApp/i.test(UA);
+  var isIOSSafari = isIOS && !isInApp && /Safari/.test(UA) && !/CriOS|FxiOS|EdgiOS/.test(UA);
+  var deferred = null, sub = bar.querySelector('.sub'), go = bar.querySelector('.go'), how = bar.querySelector('.how');
+  addEventListener('beforeinstallprompt', function (e) { deferred = e; mode = 'prompt'; render(); });
+  addEventListener('appinstalled', function () { try { localStorage.setItem(KEY, String(Date.now() + 3650 * 864e5)); } catch (e) {} bar.remove(); });
+  var mode = isInApp ? 'inapp' : isIOSSafari ? 'ios' : isIOS ? 'ios-other' : 'wait';
+  function render() {
+    if (mode === 'inapp') { sub.textContent = (isKakao ? '카카오톡' : '인스타') + ' 안에서는 저장이 안 돼요'; go.textContent = '브라우저로 열기'; }
+    else if (mode === 'ios') { sub.textContent = '홈 화면에 추가하면 앱처럼 열려요'; go.textContent = '방법 보기'; }
+    else if (mode === 'ios-other') { sub.textContent = '사파리에서 열면 홈 화면에 추가할 수 있어요'; go.textContent = '방법 보기'; }
+    else if (mode === 'prompt') { sub.textContent = '설치하면 홈 화면에서 바로 열려요'; go.textContent = '설치'; }
+  }
+  render();
+  function copyLink() {
+    var u = location.origin + location.pathname + location.search;
+    var done = function () { var c = how.querySelector('.copy'); if (c) c.textContent = '복사했어요 ✓'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, fallback); else fallback();
+    function fallback() { var t = document.createElement('textarea'); t.value = u; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch (e) {} t.remove(); }
+  }
+  function showHow(html, withCopy) {
+    how.innerHTML = html + (withCopy ? '<br><button class="copy">링크 복사</button>' : '');
+    how.classList.add('on'); var c = how.querySelector('.copy'); if (c) c.onclick = copyLink;
+  }
+  go.onclick = function () {
+    var url = location.origin + location.pathname + location.search;
+    if (mode === 'prompt' && deferred) { deferred.prompt(); deferred.userChoice && deferred.userChoice.then(function (r) { if (r && r.outcome === 'accepted') bar.remove(); }); return; }
+    if (mode === 'inapp') {
+      if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return; }
+      if (isAndroid) { location.href = 'intent://' + location.host + location.pathname + location.search + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end'; }
+      showHow(isIOS ? '오른쪽 위 <b>⋯</b> 를 누르고 <b>“외부 브라우저로 열기”</b>를 골라 주세요. 사파리에서 열면 홈 화면에 추가할 수 있어요.'
+                    : '안 열리면 오른쪽 위 <b>⋮</b> 를 누르고 <b>“다른 브라우저로 열기”</b>를 골라 주세요.', true);
+      return;
+    }
+    if (mode === 'ios') { showHow('아래쪽 <b>공유 버튼(□↑)</b> → <b>“홈 화면에 추가”</b> → <b>추가</b>를 누르면 앱처럼 열려요.'); return; }
+    if (mode === 'ios-other') { showHow('<b>사파리</b>에서 이 주소를 연 뒤, 공유 버튼(□↑) → “홈 화면에 추가”를 눌러 주세요.', true); return; }
+  };
+  bar.querySelector('.x').onclick = function () {
+    try { localStorage.setItem(KEY, String(Date.now() + 3 * 864e5)); } catch (e) {}
+    bar.classList.remove('in'); setTimeout(function () { bar.remove(); }, 300);
+  };
+  // 조용할 때만 띄우기: 로딩·튜토리얼·조작 안내·다른 창·놀이기구 탑승 중엔 기다림
+  function shown(e) { if (!e || e.hidden) return false; var cs = getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0'; }
+  function calm() {
+    if (!window.__booted || document.getElementById('loader') || document.getElementById('coach')) return false;
+    if (document.body.classList.contains('tut-open') || document.body.classList.contains('riding')) return false;
+    var c = document.querySelectorAll('.modal, #sheet, #catchModal, #mg, #storyView, #tut'); for (var i = 0; i < c.length; i++) if (shown(c[i])) return false;
+    return true;
+  }
+  var calmFor = 0, visible = false;
+  setInterval(function () {
+    if (!document.body.contains(bar)) return;
+    var ok = calm() && mode !== 'wait';
+    calmFor = ok ? calmFor + 0.5 : 0;
+    if (!visible && calmFor >= 6) { visible = true; bar.classList.add('on'); requestAnimationFrame(function () { bar.classList.add('in'); }); }
+    else if (visible && !ok && !how.classList.contains('on')) { visible = false; bar.classList.remove('in', 'on'); }
+  }, 500);
+  window.__appbar = { get mode() { return mode; }, get visible() { return visible; } };
 })();
 </script>
 

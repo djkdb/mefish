@@ -2077,6 +2077,7 @@ function showLED(msg, dur = 2.4, sub = false) {
   ledEl.textContent = msg; ledEl.classList.toggle('sub', sub); ledEl.classList.add('show'); ledTimer = dur;
   ledAvoid();
 }
+let ledChk = 0;
 function ledAvoid() { // 길 안내·시작 퀘스트와 겹치면 그 아래로
   ledEl.style.top = '';
   const gEl = document.getElementById('guide'), kids = [...gEl.children].filter(c => !c.hidden);
@@ -2617,7 +2618,7 @@ function updateWorld(dt, t) {
   }
   updateParticles(dt);
   if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.classList.remove('show'); }
-  if (ledTimer > 0) { ledTimer -= dt; if (ledTimer <= 0) ledEl.classList.remove('show'); }
+  if (ledTimer > 0) { ledTimer -= dt; ledChk -= dt; if (ledChk <= 0) { ledChk = 0.25; ledAvoid(); } if (ledTimer <= 0) ledEl.classList.remove('show'); } // 나중에 뜬 퀘스트·길 안내와도 안 겹치게
 }
 // 족욕카페 김: 그룹 대신 물 위 임의 지점에서
 const _fs = new THREE.Object3D(); ZG.foot.add(_fs);

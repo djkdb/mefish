@@ -3,7 +3,7 @@
   // 찌멍 (낚시: 저수지·얼음 호수)
   "name": "jjimeong",
   "main": "server/index.js",
-  "compatibility_date": "2025-09-01",
+  "compatibility_date": "2026-04-07",
   "assets": { "directory": "./sites/jjimeong", "binding": "ASSETS" },
   "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }, { "name": "BOARDS", "class_name": "Board" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }, { "tag": "v2", "new_sqlite_classes": ["Board"] }],

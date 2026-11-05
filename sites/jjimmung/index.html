@@ -3763,9 +3763,11 @@ function createNet({ site, name, look, onWelcome, onJoin, onState, onLeave, onEv
   const startT = setTimeout(start, 2000);
   for (const ev of ['pointerdown', 'keydown', 'touchstart']) addEventListener(ev, () => { clearTimeout(startT); start(); }, { once: true, passive: true });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { hideT = setTimeout(() => { if (ws) { retry = 0; try { ws.close(1000, 'hidden'); } catch (_) { } } }, 180000); }
+    if (document.hidden) { hideT = setTimeout(() => { if (ws) { retry = 0; try { ws.close(1000, 'hidden'); } catch (_) { } } }, 60000); } // 1분 넘게 숨기면 자리를 비워 줘요
     else { clearTimeout(hideT); if (started && !ws) { retry = 0; connect(); } }
   });
+  // 페이지를 떠날 때(탭 닫기·다른 사이트로 이동·앱 종료): 서버에 인사하고 바로 연결 닫기 → 다른 사람 화면에서 즉시 퇴장
+  addEventListener('pagehide', () => { if (ws && ws.readyState === 1) { try { ws.send('{"t":"bye"}'); ws.close(1000, 'bye'); } catch (_) { } } });
   function send(s, now) {
     sent = s; sentAt = now; sentDisc = discOf(s); pending = false;
     ws.send(JSON.stringify({ t: 's', s }));

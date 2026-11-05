@@ -6,10 +6,11 @@
 // - 한 방에 30명이 차면 다음 방으로 자동 배정. ?room=이름 이면 그 방으로.
 import { DurableObject } from 'cloudflare:workers';
 
-const CAP = 30;
+const CAP_DEFAULT = 30;          // 방 하나 최대 인원 (vars.CAP 으로 바꿀 수 있어요)
+const STALE_DEFAULT = 130000;    // 이 시간(ms) 동안 메시지·ping 이 없으면 끊긴 연결로 보고 정리 (클라이언트 ping 50초)
+const HELLO_GRACE = 15000;       // 연결 직후 인사(hello) 기다리는 시간
 const MAX_AUTO_ROOMS = 50;
 const MAX_MSG = 1500;
-const roomHint = {}; // 이 Worker 인스턴스가 기억하는 "최근 자리가 있던 방" (best-effort)
 const RATE_WINDOW = 5000, RATE_MAX = 60; // 5초에 60개(초당 12개) 넘게 보내면 끊어요
 
 export default {
@@ -19,6 +20,7 @@ export default {
     if (url.pathname.startsWith('/fishing')) return Response.redirect(new URL('/' + url.search, url), 301);
     if (url.pathname.startsWith('/jjimjilbang') && env.JJIM_URL) return Response.redirect(env.JJIM_URL, 301);
     if (url.pathname === '/board') return board(request, env, url);
+    if (url.pathname === '/stats') return stats(env, url);
     if (url.pathname !== '/ws') return env.ASSETS.fetch(request);
     if (request.headers.get('Upgrade') !== 'websocket') return new Response('WebSocket 전용 주소예요', { status: 426 });
 
@@ -31,20 +33,33 @@ export default {
       const res = await roomStub(env, `${site}:r:${named}`).fetch(withRoom(request, named));
       return res.status === 409 ? new Response('이 방은 꽉 찼어요', { status: 409 }) : res;
     }
-    // 자동 배정: 최근에 자리가 있던 방부터 찾아요 (꽉 찬 방을 매번 1번부터 두드리면
-    // 그만큼 Durable Object 요청이 늘어 무료 한도를 빨리 써요). 가끔은 앞 방이 비었는지 다시 봐요.
-    const hint = Math.random() < 0.15 ? 1 : (roomHint[site] || 1);
-    for (let k = 0; k < MAX_AUTO_ROOMS; k++) {
-      const i = ((hint - 1 + k) % MAX_AUTO_ROOMS) + 1;
+    // 자동 배정: 항상 1번 방부터 채워요 → 사람이 적을 때 모두 한 방에서 만나요.
+    // (꽉 찬 방을 건너뛸 때마다 요청이 1건 늘지만, 30명 넘게 몰릴 때만 생기는 비용이에요)
+    for (let i = 1; i <= MAX_AUTO_ROOMS; i++) {
       const res = await roomStub(env, `${site}:auto:${i}`).fetch(withRoom(request, String(i)));
-      if (res.status !== 409) { roomHint[site] = i; return res; }
-      if (k >= 12) break; // 너무 많이 두드리지 않기
+      if (res.status !== 409) return res;
+      if (i >= 20) break; // 600명 넘으면 더 두드리지 않기
     }
     return new Response('모든 방이 꽉 찼어요', { status: 503 });
   },
 };
 
 const roomStub = (env, name) => env.ROOMS.get(env.ROOMS.idFromName(name));
+
+/* ---------------- 지금 몇 명? (/stats) ----------------
+   GET /stats → { site, cap, rooms:[{room, n}], total }  (자동 배정 방만, 사람 수만 — 개인정보 없음)
+   빈 방이 2개 연속 나오면 멈춰요. 확인할 때만 몇 번의 요청을 써요. */
+async function stats(env, url) {
+  const sites = String(env.SITES || 'lake').split(',');
+  const site = sites.includes(url.searchParams.get('site')) ? url.searchParams.get('site') : sites[0];
+  const rooms = []; let empty = 0, total = 0;
+  for (let i = 1; i <= MAX_AUTO_ROOMS && empty < 2; i++) {
+    const r = await roomStub(env, `${site}:auto:${i}`).fetch(new Request('https://room/?stats=1'));
+    const { n } = await r.json();
+    if (n > 0) { rooms.push({ room: i, n }); total += n; empty = 0; } else empty++;
+  }
+  return json({ site, cap: Number(env.CAP) || CAP_DEFAULT, rooms, total, at: new Date().toISOString() });
+}
 
 /* ---------------- 오늘의 랭킹 (/board) ----------------
    GET  /board?site=lake&kind=big&id=<내 id>          → { date, kind, top:[{n,v,x}], me:{rank,v}|null }
@@ -111,12 +126,39 @@ export class Room extends DurableObject {
     this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
   }
 
+  // 살아 있는 연결인지: 열려 있고, 최근에 메시지나 ping 이 왔는지
+  alive(ws, now) {
+    if (ws.readyState !== WebSocket.OPEN) return false;
+    const a = ws.deserializeAttachment(); if (!a) return false;
+    let last = a.t || a.c || 0;
+    const ping = this.ctx.getWebSocketAutoResponseTimestamp(ws); if (ping) last = Math.max(last, ping.getTime());
+    if (!a.name) return now - (a.c || 0) < HELLO_GRACE; // 막 들어와 인사 전
+    return now - last < (Number(this.env.STALE_MS) || STALE_DEFAULT);
+  }
+  // 끊긴 연결 정리: 닫고, 남은 사람들에게 퇴장 알림 (추가 요청 없이 다른 일 할 때 같이)
+  sweep(now = Date.now()) {
+    let gone = 0;
+    for (const ws of this.ctx.getWebSockets()) {
+      if (this.alive(ws, now)) continue;
+      const a = ws.deserializeAttachment();
+      try { ws.close(4000, 'stale'); } catch { }
+      if (a?.name && !a.left) { a.left = true; try { ws.serializeAttachment(a); } catch { } this.broadcast({ t: 'leave', id: a.id }, ws); gone++; }
+    }
+    if (gone) this.broadcastCount();
+    this.lastSweep = now;
+    return gone;
+  }
+  liveCount(now = Date.now()) { return this.ctx.getWebSockets().filter(w => this.alive(w, now)).length; }
+
   async fetch(request) {
-    if (this.ctx.getWebSockets().length >= CAP) return new Response('full', { status: 409 });
-    const room = new URL(request.url).searchParams.get('roomName') || '1';
+    const u = new URL(request.url), now = Date.now();
+    this.sweep(now);
+    if (u.searchParams.has('stats')) return json({ n: this.ctx.getWebSockets().filter(w => this.alive(w, now) && w.deserializeAttachment()?.name).length });
+    if (this.liveCount(now) >= (Number(this.env.CAP) || CAP_DEFAULT)) return new Response('full', { status: 409 });
+    const room = u.searchParams.get('roomName') || '1';
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ id: crypto.randomUUID().slice(0, 8), room, name: null, look: null, s: null });
+    server.serializeAttachment({ id: crypto.randomUUID().slice(0, 8), room, name: null, look: null, s: null, c: now, t: now });
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -133,6 +175,8 @@ export class Room extends DurableObject {
     const a = ws.deserializeAttachment();
     if (!a) return;
 
+    a.t = now; // 마지막으로 소식이 온 시각
+    if (!this.lastSweep || now - this.lastSweep > 30000) this.sweep(now); // 30초에 한 번, 끊긴 연결 정리
     if (m.t === 'hello') {
       a.name = cleanName(m.name);
       a.look = isObj(m.look) ? m.look : null;
@@ -142,9 +186,9 @@ export class Room extends DurableObject {
       for (const o of this.ctx.getWebSockets()) {
         if (o === ws) continue;
         const b = o.deserializeAttachment();
-        if (b?.name) peers.push({ id: b.id, name: b.name, look: b.look, s: b.s });
+        if (b?.name && !b.left && this.alive(o, now)) peers.push({ id: b.id, name: b.name, look: b.look, s: b.s });
       }
-      send(ws, { t: 'welcome', id: a.id, room: a.room, peers, n: peers.length + 1 });
+      send(ws, { t: 'welcome', id: a.id, room: a.room, peers, n: peers.length + 1, cap: Number(this.env.CAP) || CAP_DEFAULT });
       this.broadcast({ t: 'join', id: a.id, name: a.name, look: a.look, s: a.s }, ws);
       this.broadcastCount();
       return;
@@ -155,7 +199,11 @@ export class Room extends DurableObject {
       ws.serializeAttachment(a); // 새로 들어온 사람에게 마지막 위치를 알려주기 위해 저장
       this.broadcast({ t: 's', id: a.id, s: m.s }, ws);
     } else if (m.t === 'ev' && isObj(m.e)) {
+      ws.serializeAttachment(a);
       this.broadcast({ t: 'ev', id: a.id, e: m.e }, ws);
+    } else if (m.t === 'bye') { // 페이지를 떠날 때 보내는 인사 → 바로 퇴장 처리
+      try { ws.close(1000, 'bye'); } catch { }
+      this.leave(ws);
     }
   }
 
@@ -171,7 +219,7 @@ export class Room extends DurableObject {
   leave(ws) {
     this.rate.delete(ws);
     const a = ws.deserializeAttachment();
-    if (a?.name) this.broadcast({ t: 'leave', id: a.id }, ws);
+    if (a?.name && !a.left) { a.left = true; try { ws.serializeAttachment(a); } catch { } this.broadcast({ t: 'leave', id: a.id }, ws); }
     this.broadcastCount(ws);
   }
 
@@ -184,7 +232,8 @@ export class Room extends DurableObject {
   }
 
   broadcastCount(except) {
-    const live = this.ctx.getWebSockets().filter(o => o !== except && o.readyState === WebSocket.OPEN && o.deserializeAttachment()?.name);
+    const now = Date.now();
+    const live = this.ctx.getWebSockets().filter(o => o !== except && this.alive(o, now) && o.deserializeAttachment()?.name);
     const s = JSON.stringify({ t: 'count', n: live.length });
     for (const o of live) { try { o.send(s); } catch { } }
   }

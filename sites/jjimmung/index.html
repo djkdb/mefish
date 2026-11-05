@@ -63,9 +63,46 @@
   .ib.on { background: var(--fg); color: var(--p); }
   #row2 { position: fixed; z-index: 5; top: calc(var(--st) + 58px); left: calc(var(--sl) + 8px); display: flex; gap: 6px; align-items: center;
     max-width: calc(100vw - 16px - var(--sl) - var(--sr)); }
-  #statchip { height: 44px; padding: 0 12px; display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; }
-  #statchip .k { color: var(--dim); } #statchip b { font-weight: 700; font-variant-numeric: tabular-nums; }
-  #statchip .chev { width: 14px; height: 14px; stroke: var(--dim); fill: none; stroke-width: 2; }
+  #row2 { flex-wrap: wrap; }
+  .chip { position: relative; height: 44px; padding: 0 11px; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; }
+  .chip .k { color: var(--dim); } .chip b { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chip .xp, .chip .tb { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #2a221c; }
+  .chip .xp::after, .chip .tb::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: var(--p); background: var(--c, var(--acc2)); }
+  #mispanel { position: fixed; z-index: 7; top: calc(var(--st) + 108px); left: calc(var(--sl) + 8px); width: min(320px, calc(100vw - 16px)); padding: 12px; }
+  #mispanel h3, #statpanel h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dim); display: flex; justify-content: space-between; }
+  .mis { margin: 8px 0; } .mis > div { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .mis > div span { color: var(--dim); white-space: nowrap; } .mis i { display: block; height: 4px; margin-top: 5px; background: #2a221c; position: relative; }
+  .mis i::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--p); background: var(--acc2); }
+  .mis.ok b { color: #8fdca6; } .mis.ok i::after { background: #3fbf6a; }
+  .meter { height: 6px; background: #2a221c; position: relative; margin: 4px 0 12px; } .meter::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--p); background: var(--c, var(--acc2)); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .grid2 .btn { width: 100%; }
+  #mg { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(var(--sb) + 16px); width: min(420px, calc(100vw - 24px)); padding: 10px; }
+  .mgh { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; } .mgh b { font-size: 16px; } .mgh .mgs { flex: 1; color: var(--dim); font-size: 13px; }
+  #mgc { display: block; width: 100%; height: 84px; }
+  .mgb { width: 100%; min-height: 64px; font-size: 18px; margin-top: 6px; touch-action: none; }
+  #stampfx { position: fixed; z-index: 9; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; pointer-events: none; background: var(--p); border: 1px solid var(--line); border-radius: 6px; padding: 18px 26px 12px; }
+  #stampfx p { margin: 10px 0 0; font-size: 15px; } #stampfx p b { color: var(--acc2); margin-left: 4px; }
+  .stamp-ink { width: 112px; height: 112px; margin: 0 auto; border: 6px solid #c8321e; border-radius: 50%; color: #e0402a; display: grid; place-items: center; align-content: center; transform: rotate(-12deg); }
+  .stamp-ink span { font-size: 46px; font-weight: 800; line-height: 1; } .stamp-ink small { font-size: 13px; font-weight: 700; }
+  #stampfx.go .stamp-ink { animation: stampIn .5s cubic-bezier(.2,.9,.3,1.3); }
+  @keyframes stampIn { 0% { transform: scale(2.6) rotate(-30deg); opacity: 0; } 60% { transform: scale(.92) rotate(-10deg); opacity: 1; } 100% { transform: scale(1) rotate(-12deg); } }
+  #lvup { position: fixed; z-index: 9; left: 50%; top: 24%; transform: translateX(-50%); min-width: 240px; text-align: center; pointer-events: none; background: var(--p); border: 1px solid var(--line); border-top: 4px solid var(--acc); border-radius: 6px; padding: 14px 22px; }
+  #lvup small { display: block; font-size: 12px; letter-spacing: .3em; color: var(--acc2); font-weight: 800; } #lvup b { display: block; font-size: 24px; margin: 4px 0; } #lvup em { font-style: normal; font-size: 12px; color: #8fdca6; } #lvup p { margin: 6px 0 0; font-size: 13px; color: #d6d3d1; }
+  #lvup.go { animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: translateX(-50%) scale(.7); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+  #heat { position: fixed; inset: 0; z-index: 3; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(205,25,10,.62) 100%); }
+  .ov.bottom { align-items: flex-end; background: rgba(8, 6, 5, 0.25); } .ov.bottom .card { max-height: 52vh; }
+  .sh-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; } .sh-h h2 { margin: 0; }
+  .stampgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .sc { position: relative; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: #0f0c0a; }
+  .sc b { font-size: 15px; } .sc small { font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .sc i { position: absolute; inset: 14%; border: 4px solid #c8321e; border-radius: 50%; color: #e0402a; font-style: normal; font-size: 28px; font-weight: 800; display: grid; place-items: center; transform: rotate(-14deg); background: rgba(200, 50, 30, 0.1); }
+  .sc.on b, .sc.on small { opacity: .5; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; } .opt { min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--p2); color: var(--fg); font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+  .opt.on { border-color: var(--acc2); background: #2a1a12; } .opt:disabled { opacity: .42; } .opt i { width: 14px; height: 14px; border: 1px solid rgba(255,255,255,.3); display: inline-block; } .opt small { color: var(--dim); }
+  .tabs { display: flex; gap: 6px; margin: 4px 0 10px; } .tabs .btn { flex: 1; padding: 0 6px; }
+  ol.rank { list-style: none; margin: 0; padding: 0; } ol.rank li { display: grid; grid-template-columns: 26px 1fr auto auto; gap: 8px; align-items: center; min-height: 36px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  ol.rank li small { color: var(--dim); font-size: 11px; } ol.rank li.me { color: var(--acc2); } ol.rank li.empty { display: block; color: var(--dim); padding: 10px 0; }
   #online { height: 32px; padding: 0 10px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dim); white-space: nowrap; pointer-events: none; }
   #online i { width: 7px; height: 7px; border-radius: 50%; background: #3fbf6a; flex: none; }
   #online.off i { background: #857a71; }
@@ -171,10 +208,18 @@
   <button id="btnSound" class="ib" aria-label="소리 켜기/끄기"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M17 9c1.2 1.6 1.2 4.4 0 6M19.5 6.5c2.6 3 2.6 8 0 11"/><path class="x" d="M17 9l5 6M22 9l-5 6"/></svg></button>
 </div>
 <div id="row2">
-  <button id="statchip" class="pnl" aria-label="오늘 기록 펼치기"></button>
+  <button id="statchip" class="pnl chip" aria-label="내 레벨 · 오늘 기록"></button>
+  <button id="tempchip" class="pnl chip" aria-label="체온"></button>
+  <button id="mischip" class="pnl chip" aria-label="오늘의 미션"></button>
   <div id="online" class="pnl" hidden><i></i><span></span></div>
 </div>
 <div id="statpanel" class="pnl" hidden></div>
+<div id="mispanel" class="pnl" hidden></div>
+<div id="heat"></div>
+<div id="mg" class="pnl" hidden><div class="mgh"><b class="mgt"></b><span class="mgs num"></span><button class="btn sm ghost" data-quit>그만</button></div><canvas id="mgc"></canvas><button class="btn acc mgb" data-tap>탭</button></div>
+<div id="stampfx" hidden></div>
+<div id="lvup" hidden></div>
+<div id="sheet" class="ov" hidden></div>
 <canvas id="map" class="pnl" hidden></canvas>
 <div id="led"></div>
 <div id="toast" class="pnl"></div>
@@ -231,6 +276,11 @@ const SITE_HOST = 'jjimmung.tjdwns2121.workers.dev';
 const SITE_URL = (location.protocol === 'https:' || location.protocol === 'http:') && !/localhost|127\.0\.0\.1/.test(location.host)
   ? location.origin + location.pathname.replace(/index\.html$/, '') : `https://${SITE_HOST}/`;
 const haptic = (ms = 12) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+// 시간: 한국 날짜·시각 기준 (테스트용 ?toff=ms 로 시계를 옮길 수 있어요)
+let timeOffset = Number(QS.get('toff')) || 0;
+const nowMs = () => Date.now() + timeOffset;
+const kstDay = () => new Date(nowMs() + 9 * 3600e3).toISOString().slice(0, 10);
+const kstMinutes = () => { const d = new Date(nowMs() + 9 * 3600e3); return d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60; };
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -1551,9 +1601,11 @@ const MODE_POSE = {
   bingsu: pose({ lift: -0.17, legLx: -1.5, legRx: -1.5, armLx: -1.0, armRx: -1.0, armLz: -0.15, armRz: 0.15, headX: 0.22 }),
   foot: pose({ lift: -0.17, legLx: -0.85, legRx: -0.85, legLz: 0.08, legRz: -0.08, armLx: 0.45, armRx: 0.45, armLz: 0.22, armRz: -0.22, headX: 0.12 }),
   dry: pose({ armRx: -2.8, armRz: -0.4, armLx: -2.6, armLz: 0.5, headX: 0.05 }),
+  dizzy: pose({ armLz: 0.55, armRz: -0.55, armLx: -0.2, armRx: -0.2, headX: 0.12 }),
+  oneshot: pose({ armRx: -2.2, armRz: 0.4, headX: -0.5 }),
 };
 const CAM_MODE = { massage: { up: 1.1, d: 2.6, down: 0.25 }, dry: { a: Math.PI - 0.55, d: 2.2, up: 0.5 }, read: { up: 0.75 }, foot: { up: 0.8, d: 2.6 }, ramen: { up: 0.7 }, bingsu: { up: 0.7 } };
-const HEAD_Y = { sweat: 0.95, read: 0.95, massage: 1.05, ramen: 1.1, bingsu: 1.1, foot: 1.05, cool: 1.45, dry: 1.45, egg: 1.45, drink: 1.45 };
+const HEAD_Y = { dizzy: 1.45, oneshot: 1.45, sweat: 0.95, read: 0.95, massage: 1.05, ramen: 1.1, bingsu: 1.1, foot: 1.05, cool: 1.45, dry: 1.45, egg: 1.45, drink: 1.45 };
 function eggPose(T) {
   const lift = Math.min(1, T / 0.4), bump = (c) => Math.exp(-Math.pow((T - c) / 0.05, 2));
   return pose({ armRx: -2.25 * lift - 0.4 * (bump(0.75) + bump(1.15)) * lift, armRz: 0.35 * lift, headX: 0.12 * (bump(0.75) + bump(1.15)) });
@@ -1592,6 +1644,9 @@ function driveChar(ch, mode, T, t, dt, o = {}) {
     ch.headG.rotation.z = Math.sin(t * 1.3) * 0.04;
   } else if (mode === 'cool') { ch.body.position.x = Math.sin(t * 45) * 0.008; if (o.near && ((t + (o.ph || 0)) % 1.6) < dt) emitPuff(ch); }
   else if (mode === 'massage') { ch.body.position.x = Math.sin(t * 57) * 0.012; ch.body.position.y = Math.abs(Math.sin(t * 23)) * 0.015; }
+  else if (mode === 'dizzy') { ch.body.position.x = Math.sin(t * 3.1) * 0.06; ch.headG.rotation.z = Math.sin(t * 5) * 0.28; ch.body.rotation.z = Math.sin(t * 2.3) * 0.06; }
+  if (mode !== 'dizzy') ch.body.rotation.z = 0;
+  if (ch.mask) ch.mask.visible = (mode === 'sleep' || mode === 'lie') && !!(ch.cos && ch.cos.m);
   if (ch.blob) ch.blob.visible = !lying;
   const z = ZZZ_MODES.has(mode) || o.zzz;
   if (z || ch.zzz) { const s = zzzFor(ch); s.visible = !!z; if (z) { headWorld(ch, s.position); s.position.y += 0.45 + Math.sin(t * 1.2 + (o.ph || 0)) * 0.08; s.material.opacity = 0.55 + Math.sin(t * 1.2 + (o.ph || 0)) * 0.35; } }
@@ -1624,7 +1679,7 @@ const state = { mode: 'free', modeT: 0, heading: Math.PI, speed: 0, seat: null, 
 const STAT_KEYS = ['sweat', 'eggs', 'sikhye', 'ramen', 'bingsu', 'massage', 'manga', 'sleep'];
 const stats = { sweat: 0, eggs: 0, sikhye: 0, ramen: 0, bingsu: 0, massage: 0, manga: 0, sleep: 0 };
 Object.assign(stats, LS.get('jjimmung-stats-v1', {}));
-const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+const todayKey = () => kstDay();
 let today = LS.get('jjimmung-today-v1', null);
 if (!today || today.d !== todayKey()) today = { d: todayKey(), sweat: 0, eggs: 0, sikhye: 0, ramen: 0, bingsu: 0, massage: 0, manga: 0, sleep: 0, zones: [], maxT: null };
 function addStat(k, v = 1) { stats[k] = (stats[k] || 0) + v; today[k] = (today[k] || 0) + v; }
@@ -1893,23 +1948,23 @@ function setZoneHUD(z) {
 }
 const CHEV = '<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
 let lastChip = '';
-function renderStats(force) {
-  const t = `<span class="k">땀</span><b>${fmtTime(today.sweat)}</b><span class="k">계란</span><b>${today.eggs}</b><span class="k">식혜</span><b>${today.sikhye}</b>${CHEV}`;
-  if (t !== lastChip || force) { chipEl.innerHTML = t; lastChip = t; }
-  if (!panelEl.hidden) renderPanel();
-}
+function renderStats(force) { if (force) hudKey = ''; }
 function renderPanel() {
   const rows = [['땀 뺀 시간', fmtTime(today.sweat)], ['맥반석 계란', `${today.eggs}개`], ['식혜', `${today.sikhye}잔`], ['라면', `${today.ramen}그릇`],
     ['팥빙수', `${today.bingsu}그릇`], ['안마의자', `${today.massage}회`], ['만화책', `${today.manga}권`], ['수면실', `${Math.floor(today.sleep / 60)}분`],
     ['둘러본 곳', `${today.zones.length} / ${ZONES.filter(z => z.short).length}`]];
-  const html = `<h3><span>오늘의 찜질 기록</span><span class="num">누적 땀 ${fmtTime(stats.sweat)}</span></h3><div class="rows">${rows.map(([a, b]) => `<span>${a}</span><span>${b}</span>`).join('')}</div>
-    <button class="btn acc sm" data-share style="width:100%">인스타 스토리에 공유</button>`;
+  const lv = myLv(), base = lvNeed(lv), next = lvNeed(lv + 1);
+  const html = `<h3><span>Lv.${lv} · ${titleOf(lv)}${D.master ? ' · 찜질 마스터' : ''}</span><span class="num">${Math.floor(G.xp - base)} / ${next - base} XP</span></h3>
+    <div class="meter" style="--p:${((G.xp - base) / (next - base) * 100).toFixed(0)}%"></div>
+    <h3><span>개운함</span><span class="num">${Math.floor(D.fresh)} / 100</span></h3><div class="meter" style="--p:${D.fresh.toFixed(0)}%;--c:#3fbf6a"></div>
+    <h3><span>오늘의 찜질 기록</span><span class="num">누적 땀 ${fmtTime(stats.sweat)}</span></h3><div class="rows">${rows.map(([a, b]) => `<span>${a}</span><span>${b}</span>`).join('')}</div>
+    <div class="grid2"><button class="btn sm" data-stamps>스탬프 ${Object.keys(D.stamps).length}/9</button><button class="btn sm" data-cos>꾸미기</button>${BOARD_ON ? '<button class="btn sm" data-rank>오늘의 랭킹</button>' : ''}<button class="btn acc sm" data-share>스토리 공유</button></div>`;
   if (panelEl.dataset.h !== html) { panelEl.innerHTML = html; panelEl.dataset.h = html; }
 }
-chipEl.addEventListener('click', e => { e.stopPropagation(); haptic(8); panelEl.hidden = !panelEl.hidden; if (!panelEl.hidden) { panelEl.dataset.h = ''; renderPanel(); } });
+const placeUnderRow2 = el => { el.style.top = Math.round(document.getElementById('row2').getBoundingClientRect().bottom + 6) + 'px'; };
+chipEl.addEventListener('click', e => { e.stopPropagation(); haptic(8); misPanel.hidden = true; panelEl.hidden = !panelEl.hidden; if (!panelEl.hidden) { placeUnderRow2(panelEl); panelEl.dataset.h = ''; renderPanel(); } });
 panelEl.addEventListener('pointerdown', e => e.stopPropagation());
-function closePanels() { panelEl.hidden = true; }
-renderStats();
+function closePanels() { panelEl.hidden = true; misPanel.hidden = true; }
 
 // 미니맵
 const mapEl = document.getElementById('map'), mapBtn = document.getElementById('btnMap');
@@ -1929,6 +1984,7 @@ function drawMap() {
   for (const z of ZONES) {
     g.fillStyle = z.mc; g.fillRect(X(z.x0), Y(z.z0), (z.x1 - z.x0) * s, (z.z1 - z.z0) * s);
     g.strokeStyle = z === curZone ? '#ffffff' : 'rgba(0,0,0,0.6)'; g.lineWidth = (z === curZone ? 2 : 1) * DPR; g.strokeRect(X(z.x0), Y(z.z0), (z.x1 - z.x0) * s, (z.z1 - z.z0) * s);
+    if (EV && EV.zone === z.id) { g.strokeStyle = `rgba(255,115,64,${0.55 + 0.45 * Math.sin(performance.now() / 180)})`; g.lineWidth = 3 * DPR; g.strokeRect(X(z.x0) + 2, Y(z.z0) + 2, (z.x1 - z.x0) * s - 4, (z.z1 - z.z0) * s - 4); }
     if (mapBig && z.short) { g.fillStyle = '#fff'; g.font = `700 ${11 * DPR}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(z.short, X((z.x0 + z.x1) / 2), Y((z.z0 + z.z1) / 2)); }
   }
   g.fillStyle = '#5fd0ff'; for (const r of remotes.values()) { g.beginPath(); g.arc(X(r.ch.root.position.x), Y(r.ch.root.position.z), 2.6 * DPR, 0, 7); g.fill(); }
@@ -1940,7 +1996,7 @@ function drawMap() {
 
 // ───────────────────────── 자리 · 동작 ─────────────────────────
 const TOGGLE = { sweat: '일어나기', lie: '일어나기', sleep: '일어나기', cool: '그만 식히기', massage: '안마 그만', read: '책 덮기', dry: '드라이 끄기', foot: '발 빼기', ramen: '그만 먹기', bingsu: '그만 먹기' };
-const NET_MODES = new Set(Object.keys(TOGGLE));
+const NET_MODES = new Set([...Object.keys(TOGGLE), 'dizzy']);
 const SWEAT_ZONES = new Set(['hwangto', 'char', 'salt', 'cyp']);
 const inKiln = p => Math.hypot(p.x - KILN.x, p.z - KILN.z) < KILN.R - 0.45;
 const nearCounter = p => p.x > COUNTER.x0 && p.x < COUNTER.x1 && p.z > COUNTER.z0 && p.z < COUNTER.z1;
@@ -1956,7 +2012,7 @@ function nearestSeat(p, kind, maxD = 1.25) {
 }
 function setMode(m) {
   state.mode = m; state.modeT = 0; state.didHit = [false, false, false]; state.counted = false;
-  setProps(player, NET_MODES.has(m) ? m : '', m === 'egg' || m === 'drink' ? m : '');
+  setProps(player, NET_MODES.has(m) ? m : '', m === 'egg' || m === 'drink' ? m : m === 'oneshot' ? 'drink' : '');
   document.getElementById('dim').style.opacity = m === 'sleep' ? 0.42 : 0;
 }
 let offerDone = false;
@@ -1985,10 +2041,16 @@ function doDry(s) { enterSeat(s, 'dry', '위잉— 머리 말리는 중'); }
 function doFoot(s) { enterSeat(s, 'foot', '발 담갔어요 · 40℃'); SFX.splash(); }
 function doEat(s, kind) { enterSeat(s, kind, kind === 'ramen' ? '라면 한 그릇 주문!' : '팥빙수 한 그릇 주문!'); SFX.sit(); }
 function buildActions(p) {
+  if (mgActive() || state.mode === 'dizzy' || state.mode === 'oneshot') return [];
+  const tooHot = GM.dizzyCD > 0 && GM.temp >= 38.6;
+  if (state.mode === 'sweat' && curZone.id === 'char') return [{ id: 'sweat', label: TOGGLE.sweat, on: true, fn: standUp }, { id: 'char', label: '버티기 도전', fn: startChar }];
   if (TOGGLE[state.mode]) return [{ id: state.mode, label: TOGGLE[state.mode], on: true, fn: standUp }];
   const busy = state.mode !== 'free', z = curZone, A_ = [];
   if (!z) return A_;
-  if (z.id === 'kiln' ? inKiln(p) : SWEAT_ZONES.has(z.id)) A_.push({ id: 'sweat', label: '땀 빼기', fn: doSweat, disabled: busy });
+  if (z.id === 'kiln' ? inKiln(p) : SWEAT_ZONES.has(z.id)) {
+    A_.push(tooHot ? { id: 'sweat', label: '너무 뜨거워요 · 잠깐 쉬기', fn: () => {}, disabled: true } : { id: 'sweat', label: '땀 빼기', fn: doSweat, disabled: busy });
+    if (z.id === 'char' && !tooHot) A_.push({ id: 'char', label: '버티기 도전', fn: startChar, disabled: busy });
+  }
   else if (z.id === 'ice') A_.push({ id: 'cool', label: '열 식히기', fn: doCool, disabled: busy });
   else if (z.id === 'hall') {
     const m = nearestSeat(p, 'massage', 1.3); if (m) A_.push({ id: 'massage', label: '안마받기 1,000원', fn: () => doMassage(m), disabled: busy });
@@ -1998,7 +2060,7 @@ function buildActions(p) {
   else if (z.id === 'powder') { const s = nearestSeat(p, 'mirror', 1.2); if (s) A_.push({ id: 'dry', label: '머리 말리기', fn: () => doDry(s), disabled: busy }); }
   else if (z.id === 'foot') { const s = nearestSeat(p, 'foot', 1.0); if (s) A_.push({ id: 'foot', label: '족욕하기', fn: () => doFoot(s), disabled: busy }); }
   else if (z.id === 'snack') {
-    if (nearCounter(p)) { A_.push({ id: 'egg', label: '계란 이마로 깨기', fn: doEgg, disabled: busy }); A_.push({ id: 'drink', label: '식혜 마시기', fn: doDrink, disabled: busy }); }
+    if (nearCounter(p)) { A_.push({ id: 'egg', label: '계란 이마로 깨기', fn: startEgg, disabled: busy }); A_.push({ id: 'shot', label: '식혜 원샷', fn: startShot, disabled: busy }); }
     else { const s = nearestSeat(p, 'table', 0.9); if (s) { A_.push({ id: 'ramen', label: '라면 먹기', fn: () => doEat(s, 'ramen'), disabled: busy }); A_.push({ id: 'bingsu', label: '팥빙수 먹기', fn: () => doEat(s, 'bingsu'), disabled: busy }); } }
   }
   return A_;
@@ -2058,7 +2120,9 @@ function clampCam(des, look, p) {
 function updateCamera(dt) {
   const p = player.root.position, des = new THREE.Vector3(), look = new THREE.Vector3();
   let k = 4;
-  if ((state.mode === 'lie' || state.mode === 'sleep') && state.seat) {
+  if (sheetKind === 'cos' && state.mode === 'free') {
+    const h = state.heading + 0.35; des.set(p.x + Math.sin(h) * 2.6, 1.7, p.z + Math.cos(h) * 2.6); look.set(p.x, 0.75, p.z); k = 3;
+  } else if ((state.mode === 'lie' || state.mode === 'sleep') && state.seat) {
     const s = state.seat, cx = s.px - Math.sin(s.r) * 0.85, cz = s.pz - Math.cos(s.r) * 0.85; // 몸 가운데
     des.set(cx + Math.sin(s.r) * 1.1, 5.0, cz + Math.cos(s.r) * 1.1); look.set(cx, s.y + 0.2, cz); k = 2.5;
   } else if (state.mode !== 'free') {
@@ -2077,6 +2141,8 @@ function updateCamera(dt) {
   // 보간 중에도 벽 밖으로 새지 않게 한 번 더
   clampCam(camPos, look, p);
   camera.position.copy(camPos); camera.lookAt(camLook);
+  const wob = state.mode === 'dizzy' ? 1 : THREE.MathUtils.clamp((GM.temp - 38.8) / 0.5, 0, 1) * 0.35;
+  if (wob > 0) { const tt = clock.elapsedTime; camera.rotateZ(Math.sin(tt * 2.1) * 0.07 * wob); camera.position.y += Math.sin(tt * 1.7) * 0.06 * wob; }
   fill.position.copy(camPos).add(_v2.set(0, 1.5, 0)); fill.target.position.copy(camLook);
 }
 
@@ -2084,14 +2150,27 @@ function updateCamera(dt) {
 const remotes = new Map();
 let fontsReady = false;
 const r2 = v => Math.round(v * 100) / 100;
-function nameTexture(name) {
-  return canvasTex(384, 64, (g, w, h) => {
-    let fs = 28; g.font = font(fs, 700);
-    while (g.measureText(name).width > w - 44 && fs > 16) { fs -= 2; g.font = font(fs, 700); }
-    const tw = Math.min(w - 4, g.measureText(name).width + 30);
+function nameTexture(name, lv = 1, bd = false) {
+  const lvT = `Lv.${lv}`, bdT = bd ? '찜질 마스터' : '';
+  return canvasTex(512, 64, (g, w, h) => {
+    let fs = 28; const f = () => { g.font = font(fs, 700); };
+    const wid = () => { f(); const a = g.measureText(lvT).width, b = g.measureText(name).width; g.font = font(fs * 0.8, 800); const c = bd ? g.measureText(bdT).width + 18 : 0; f(); return a + b + c + 14; };
+    while (wid() > w - 40 && fs > 14) fs -= 2;
+    const tw = Math.min(w - 4, wid() + 28); let x = (w - tw) / 2 + 14;
     g.fillStyle = 'rgba(14,11,9,0.86)'; roundRect(g, (w - tw) / 2, 10, tw, 44, 6); g.fill();
-    g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(name, w / 2, 33);
+    g.textBaseline = 'middle'; g.textAlign = 'left'; f();
+    g.fillStyle = '#ff7340'; g.fillText(lvT, x, 33); x += g.measureText(lvT).width + 8;
+    g.fillStyle = '#ffffff'; g.fillText(name, x, 33); x += g.measureText(name).width + 10;
+    if (bd) { g.font = font(fs * 0.8, 800); const bw = g.measureText(bdT).width + 12; g.fillStyle = '#c8321e'; roundRect(g, x, 18, bw, 30, 4); g.fill(); g.fillStyle = '#fff'; g.fillText(bdT, x + 6, 34); }
   }, null, !fontsReady);
+}
+function remoteMeta(r, src) {
+  if (!src || typeof src !== 'object') return;
+  const lv = THREE.MathUtils.clamp(parseInt(src.lv, 10) || r.lv || 1, 1, 99), bd = src.bd === 1, ck = typeof src.ck === 'string' ? src.ck.slice(0, 8) : r.ck;
+  if (lv === r.lv && bd === r.bd && ck === r.ck) return;
+  const cosChanged = ck !== r.ck || lv !== r.lv; r.lv = lv; r.bd = bd; r.ck = ck;
+  if (cosChanged) applyCos(r.ch, parseCk(ck || '', lv));
+  const old = r.label.material.map; r.label.material.map = nameTexture(r.name, lv, bd); r.label.material.needsUpdate = true; old.dispose();
 }
 function addRemote(p) {
   if (!p || !p.id) return;
@@ -2100,9 +2179,9 @@ function addRemote(p) {
   const ch = makeCharacter({ ...suit(look.u), towel: look.t, towelLine: towelLineOf(look.t), blob: true, ownSkin: true });
   ch.props = makeProps(ch); tagDetail(ch);
   const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTexture(name), transparent: true, depthWrite: false }));
-  label.scale.set(2.3, 0.385, 1); label.renderOrder = 5; scene.add(label);
-  const r = { id: p.id, name, ch, label, x: SPAWN.x, z: SPAWN.z, y: 0, r: Math.PI, a: '', aT: 0, shot: null, speed: 0, ph: Math.random() * 6 };
-  remotes.set(p.id, r); applyRemoteState(r, p.s, true);
+  label.scale.set(3.0, 0.375, 1); label.renderOrder = 5; scene.add(label);
+  const r = { id: p.id, name, ch, label, x: SPAWN.x, z: SPAWN.z, y: 0, r: Math.PI, a: '', aT: 0, shot: null, speed: 0, ph: Math.random() * 6, lv: 0, bd: false, ck: null, starsT: 0 };
+  remotes.set(p.id, r); remoteMeta(r, p.look); applyRemoteState(r, p.s, true);
   return r;
 }
 function applyRemoteState(r, s, snap) {
@@ -2113,13 +2192,14 @@ function applyRemoteState(r, s, snap) {
   if (Number.isFinite(h)) r.r = h;
   r.vx = Number.isFinite(+s.vx) ? THREE.MathUtils.clamp(+s.vx, -8, 8) : 0; r.vz = Number.isFinite(+s.vz) ? THREE.MathUtils.clamp(+s.vz, -8, 8) : 0;
   r.t = Number.isFinite(s._t) ? s._t : performance.now();
+  remoteMeta(r, s);
   const a = NET_MODES.has(s.a) ? s.a : '';
   if (a !== r.a) { r.a = a; r.aT = 0; setProps(r.ch, a, r.shot ? r.shot.k : ''); }
   if (snap) { r.ch.root.position.set(r.x, r.y, r.z); r.ch.root.rotation.y = r.r; }
 }
 function removeRemote(id) {
   const r = remotes.get(id); if (!r) return;
-  scene.remove(r.ch.root); scene.remove(r.label); if (r.ch.zzz) r.ch.zzz.parent.remove(r.ch.zzz);
+  scene.remove(r.ch.root); scene.remove(r.label); if (r.ch.zzz) r.ch.zzz.parent.remove(r.ch.zzz); if (r.ch.stars) scene.remove(r.ch.stars);
   r.label.material.map.dispose(); r.label.material.dispose(); r.ch.skinMat.dispose(); r.ch.shirtMat.dispose();
   remotes.delete(id);
 }
@@ -2141,7 +2221,7 @@ function updateRemotes(dt, t) {
       if (r.shot.k === 'egg') {
         applyPose(ch, eggPose(T), dt, 14); P.egg.visible = true;
         if (T > 0.75 && !r.shot.h0) { r.shot.h0 = true; SFX.tok(volAt(q)); }
-        if (T > 1.15 && !r.shot.h1) { r.shot.h1 = true; SFX.crack(volAt(q)); emitShells(ch); P.egg.material.color.set(0xfffaf0); }
+        if (T > 1.15 && !r.shot.h1) { r.shot.h1 = true; if (r.shot.res === 'weak') SFX.tok(volAt(q)); else { SFX.crack(volAt(q)); emitShells(ch); P.egg.material.color.set(0xfffaf0); if (r.shot.res === 'ouch') { r.starsT = 1.6; SFX.ouch(volAt(q)); } } }
         if (T > 1.9) { r.shot = null; P.egg.visible = false; P.egg.material.color.set(0x9a6438); }
       } else {
         applyPose(ch, drinkPose(T), dt, 14); P.can.visible = true;
@@ -2156,6 +2236,8 @@ function updateRemotes(dt, t) {
       ch.phase += r.speed * dt * 3.2; walkSwing(ch, Math.min(1, r.speed / 3.4)); if (ch.zzz) ch.zzz.visible = false; if (ch.blob) ch.blob.visible = true;
     }
     ch.skinMat.color.lerp(r.a === 'sweat' ? SKIN_HOT : r.a === 'cool' ? SKIN_COLD : SKIN0, 1 - Math.exp(-1 * dt));
+    r.starsT = Math.max(0, r.starsT - dt); tickStars(ch, r.starsT > 0 || r.a === 'dizzy', t);
+    if (!r.a && ch.mask) ch.mask.visible = false;
     headWorld(ch, r.label.position); r.label.position.y += (r.a === 'lie' || r.a === 'sleep') ? 0.45 : 0.62;
   }
 }
@@ -2200,6 +2282,7 @@ function update(dt, t) {
   if (keys.has('KeyA') || keys.has('ArrowLeft')) ix -= 1;
   if (keys.has('KeyD') || keys.has('ArrowRight')) ix += 1;
   ix += joy.x; iy -= joy.y;
+  if (mgActive() || state.mode === 'dizzy' || state.mode === 'oneshot' || !sheetEl.hidden) { ix = 0; iy = 0; }
   const il = Math.hypot(ix, iy); if (il > 1) { ix /= il; iy /= il; }
   const moving = Math.hypot(ix, iy) > 0.15;
   if (moving && TOGGLE[state.mode] && state.modeT > 0.5) standUp();
@@ -2219,21 +2302,26 @@ function update(dt, t) {
     player.phase += state.speed * dt * 3.0;
     applyPose(player, POSES.stand, dt, 10); player.body.scale.set(1, 1, 1); player.headG.rotation.z = 0; player.body.position.x = 0;
     walkSwing(player, Math.min(1, state.speed / 3.8));
-    if (player.zzz) player.zzz.visible = false; player.blob.visible = true;
+    if (player.zzz) player.zzz.visible = false; player.blob.visible = true; if (player.mask) player.mask.visible = false;
     stepAcc += state.speed * dt; if (stepAcc > 0.95) { stepAcc = 0; SFX.step(); }
   } else if (state.mode === 'egg' || state.mode === 'drink') {
     state.speed = 0; player.body.position.set(0, 0, 0);
     state.heading = lerpAngle(state.heading, state.faceTo, 1 - Math.exp(-8 * dt));
     const T = state.modeT;
     if (state.mode === 'egg') {
+      const res = state.eggRes || 'perfect';
       applyPose(player, eggPose(T), dt, 14);
       if (T > 0.75 && !state.didHit[0]) { state.didHit[0] = true; SFX.tok(); haptic(10); }
-      if (T > 1.15 && !state.didHit[1]) { state.didHit[1] = true; SFX.crack(); haptic(30); emitShells(); player.props.egg.material.color.set(0xfffaf0); addStat('eggs'); saveStats(); toast(`계란 톡! 오늘 ${today.eggs}개째`); }
-      if (T > 1.9) { player.props.egg.material.color.set(0x9a6438); setMode('free'); }
+      if (T > 1.15 && !state.didHit[1]) {
+        state.didHit[1] = true;
+        if (res === 'weak') { SFX.tok(); }
+        else { SFX.crack(); haptic(30); emitShells(); player.props.egg.material.color.set(0xfffaf0); addStat('eggs'); saveStats(); if (res === 'ouch') { SFX.ouch(); GM.starsT = 1.6; haptic([40, 30, 40]); } }
+      }
+      if (T > (res === 'weak' ? 1.45 : 1.9)) { player.props.egg.material.color.set(0x9a6438); setMode('free'); state.eggRes = null; if (MG.kind === 'egg') eggResult(res); else if (res !== 'weak') onMeal('egg'); }
     } else {
       applyPose(player, drinkPose(T), dt, 14);
       GULPS.forEach((c, i) => { if (T > c && !state.didHit[i]) { state.didHit[i] = true; SFX.gulp(); } });
-      if (T > 2.45) { addStat('sikhye'); saveStats(); toast(`식혜 꿀꺽 · 오늘 ${today.sikhye}잔째`); setMode('free'); }
+      if (T > 2.45) { addStat('sikhye'); saveStats(); onMeal('drink'); toast(`식혜 꿀꺽 · 오늘 ${today.sikhye}잔째`); setMode('free'); }
     }
   } else {
     state.speed = 0;
@@ -2245,7 +2333,7 @@ function update(dt, t) {
     if (state.mode === 'sleep') addStat('sleep', dt);
     if (state.mode === 'read' && !state.counted && state.modeT > 8) { state.counted = true; addStat('manga'); saveStats(); SFX.page(); toast(`한 권 다 읽었다 · 오늘 ${today.manga}권`); }
     if ((state.mode === 'ramen' || state.mode === 'bingsu') && state.modeT > 6.5) {
-      const r = state.mode === 'ramen'; addStat(r ? 'ramen' : 'bingsu'); haptic(20);
+      const r = state.mode === 'ramen'; addStat(r ? 'ramen' : 'bingsu'); haptic(20); onMeal(state.mode);
       toast(r ? `라면 한 그릇 뚝딱 · 오늘 ${today.ramen}그릇` : `팥빙수 싹싹 · 오늘 ${today.bingsu}그릇`); standUp();
     }
   }
@@ -2257,7 +2345,7 @@ function update(dt, t) {
   // 구역
   const z = zoneAt(p.x, p.z) || curZone;
   if (z !== curZone) {
-    curZone = z; setZoneHUD(z); visitZone(z); haptic(8);
+    const prevZ = curZone; curZone = z; setZoneHUD(z); visitZone(z); haptic(8); onZoneChange(prevZ, z);
     if (z.short || z.id === 'corr') showLED(zoneLabel(z));
   }
   setActions(buildActions(p));
@@ -2278,7 +2366,8 @@ function update(dt, t) {
     set('mass', state.mode === 'massage' ? 0.3 : 0); set('myDry', state.mode === 'dry' ? 0.35 : 0);
   }
   saveT += dt; if (saveT > 3) { saveT = 0; if (state.mode === 'sweat' || state.mode === 'sleep') saveStats(); }
-  renderStats();
+  gameTick(dt, t);
+  tickStars(player, GM.starsT > 0 || state.mode === 'dizzy', t);
 }
 let saveT = 0;
 function updateWorld(dt, t) {
@@ -2346,12 +2435,484 @@ function frame() {
   update(dt, t); updateRemotes(dt, t);
   cullT -= dt; if (cullT <= 0) { cullT = 0.25; cull(); }
   updateWorld(dt, t); updateCamera(dt); updateLights(dt, t, curZone);
-  if (net) { const p = player.root.position; net.state({ x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(state.heading), Math.cos(state.heading))), a: NET_MODES.has(state.mode) ? state.mode : '' }); }
+  if (net) { const p = player.root.position; net.state({ x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(state.heading), Math.cos(state.heading))), a: NET_MODES.has(state.mode) ? state.mode : '', lv: myLv(), ck: ckOf(G.cos), bd: D.master ? 1 : 0 }); }
   const t0 = performance.now(); renderer.render(scene, camera); lastRenderMs = performance.now() - t0;
   mapT -= dt; if (mapT <= 0) { mapT = 0.2; drawMap(); }
   frames++; { const now = performance.now(); if (now - fpsStart >= 500) { fps = frames * 1000 / (now - fpsStart); frames = 0; fpsStart = now; onFps(fps); } }
   requestAnimationFrame(frame);
 }
+
+// ═════════════════════════ 게임 요소 (멍때리기는 그대로, 위에 가볍게 얹기) ═════════════════════════
+// 스탬프 랠리 · 체온/개운함 · 미니게임 3종 · 오늘의 미션 · 레벨/칭호/꾸미기 · 이벤트 방송 · 같이 보너스 · 오늘의 랭킹
+const hashStr = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const seeded = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const mmss = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+
+// ── 저장 상태 ──
+const G = Object.assign({ xp: 0, cos: null }, LS.get('jjimmung-game-v1', {}));
+const freshDay = () => ({ d: kstDay(), stamps: {}, combo: 0, perfect: 0, eggBest: 0, charBest: 0, sleepMax: 0, footSec: 0, oneshot: 0, fresh: 0, missions: {}, master: false, posted: { char: 0, egg: 0, sweat: 0 }, rank: {}, evSeen: -1 });
+if (!G.day || G.day.d !== kstDay()) G.day = freshDay();
+let D = G.day;
+const saveG = () => LS.set('jjimmung-game-v1', G);
+
+// ── 레벨 · 칭호 · 꾸미기 ──
+const lvNeed = n => 50 * n * (n - 1);                 // Lv.n 이 되려면 필요한 누적 XP
+const lvOf = xp => { let n = 1; while (xp >= lvNeed(n + 1) && n < 99) n++; return n; };
+const TITLES = [[1, '찜린이'], [2, '땀방울'], [3, '땀쟁이'], [5, '불가마 단골'], [8, '찜질 고수'], [12, '찜신'], [16, '찜질방 터줏대감']];
+const titleOf = lv => TITLES.filter(t => lv >= t[0]).pop()[1];
+const COS = {
+  t: [{ c: 0xfff6ea, n: '흰색', lv: 1 }, { c: 0xffd3dd, n: '분홍', lv: 1 }, { c: 0xfff1a8, n: '노랑', lv: 1 }, { c: 0xd6ecff, n: '하늘', lv: 1 },
+    { c: 0x9fe0c8, n: '민트', lv: 2 }, { c: 0x2f3e5c, n: '남색', lv: 4 }, { c: 0xd9b04a, n: '금색', lv: 8 }],
+  p: [{ n: '민무늬', lv: 1 }, { n: '줄무늬', lv: 3 }, { n: '체크', lv: 6 }],
+  m: [{ n: '없음', lv: 1 }, { n: '안대', lv: 3 }],
+  n: [{ n: '없음', lv: 1 }, { n: '목수건', lv: 4 }],
+  b: [{ c: 0xff7a2a, n: '주황', lv: 1 }, { c: 0x2e86c1, n: '파랑', lv: 1 }, { c: 0x27ae60, n: '초록', lv: 2 }, { c: 0xf1c40f, n: '노랑', lv: 5 }, { c: 0x222222, n: '검정', lv: 7 }],
+};
+const COS_KEYS = ['t', 'p', 'm', 'n', 'b'];
+const COS_NAME = { t: '양머리 수건 색', p: '수건 무늬', m: '안대 (잘 때)', n: '목에 두르는 수건', b: '열쇠 팔찌' };
+if (!G.cos) G.cos = { t: Math.max(0, COS.t.findIndex(o => o.c === me.look.t)), p: 0, m: 0, n: 0, b: 0 };
+const ckOf = c => COS_KEYS.map(k => c[k] | 0).join('');
+// 다른 사람이 보낸 꾸미기·레벨 검증 (범위 + 레벨 제한)
+function parseCk(ck, lv) {
+  const s = String(ck || ''), o = {};
+  COS_KEYS.forEach((k, i) => { const v = parseInt(s[i], 10); o[k] = Number.isInteger(v) && v >= 0 && v < COS[k].length && COS[k][v].lv <= lv ? v : 0; });
+  return o;
+}
+const myLv = () => lvOf(G.xp);
+const towelMats = new Map();
+function towelMat(color, pat) {
+  const key = color + ':' + pat; if (towelMats.has(key)) return towelMats.get(key);
+  let m;
+  if (!pat) m = lam(color);
+  else {
+    const c = new THREE.Color(color), dark = '#' + c.clone().multiplyScalar(0.72).getHexString(), base = '#' + c.getHexString();
+    const tex = canvasTex(64, 64, (g, w, h) => {
+      g.fillStyle = base; g.fillRect(0, 0, w, h); g.fillStyle = dark;
+      if (pat === 1) for (let y = 0; y < h; y += 16) g.fillRect(0, y, w, 6);
+      else { g.globalAlpha = 0.6; for (let i = 0; i < w; i += 16) { g.fillRect(i, 0, 6, h); g.fillRect(0, i, w, 6); } g.globalAlpha = 1; }
+    }, [3, 3]);
+    m = new THREE.MeshLambertMaterial({ map: tex });
+  }
+  towelMats.set(key, m); return m;
+}
+const MASK_GEO = BOXG(0.4, 0.09, 0.06), NECK_GEO = new THREE.TorusGeometry(0.19, 0.055, 8, 20), BAND_GEO = new THREE.TorusGeometry(0.072, 0.02, 6, 14);
+function applyCos(ch, c) {
+  ch.cos = c;
+  const tc = COS.t[c.t].c, tm = towelMat(tc, c.p), tl = lam(new THREE.Color(tc).multiplyScalar(0.8).getHex());
+  ch.headG.traverse(o => { if (!o.isMesh) return; if (o.geometry === GEO.towelCap || o.geometry === GEO.towelRoll) o.material = tm; else if (o.geometry === GEO.towelSpiral) o.material = tl; });
+  if (!ch.mask) { ch.mask = mk(MASK_GEO, lam(0x1f2a44), 0, 0.27, 0.235, ch.headG); ch.mask.rotation.x = -0.12; ch.mask.visible = false; }
+  if (!ch.neck) { ch.neck = mk(NECK_GEO, tm, 0, 1.15, 0, ch.body); ch.neck.rotation.x = Math.PI / 2; ch.neck.scale.set(1, 1, 0.7); }
+  ch.neck.material = tm; ch.neck.visible = !!c.n;
+  if (!ch.band) { ch.band = mk(BAND_GEO, lam(0xffffff), 0, -0.43, 0, ch.armL); ch.band.rotation.x = Math.PI / 2; }
+  ch.band.material = lam(COS.b[c.b].c);
+}
+
+// ── 스탬프 ──
+const STAMPS = [['kiln', '불가마', '땀 30초'], ['hwangto', '황토방', '땀 30초'], ['char', '숯가마', '땀 30초'], ['salt', '소금방', '땀 30초'], ['cyp', '편백방', '땀 30초'],
+  ['ice', '얼음방', '20초 식히기'], ['sleep', '수면실', '1분 자기'], ['snack', '식당', '아무 메뉴'], ['foot', '족욕', '30초 담그기']];
+
+// ── 미션 (한국 날짜마다 3개, 모두에게 같음) ──
+const MISSIONS = {
+  char120: { t: '숯가마 2분 버티기', goal: 120, v: () => D.charBest, f: mmss },
+  combo3: { t: '냉온 교대 3번', goal: 3, v: () => D.combo },
+  egg3: { t: '계란 한 번에 깨기 3번', goal: 3, v: () => D.perfect },
+  sweat300: { t: '땀 5분 빼기', goal: 300, v: () => today.sweat, f: mmss },
+  stamp5: { t: '스탬프 5개 모으기', goal: 5, v: () => Object.keys(D.stamps).length },
+  sleep60: { t: '수면실에서 1분 자기', goal: 60, v: () => D.sleepMax, f: mmss },
+  massage: { t: '안마의자 이용하기', goal: 1, v: () => today.massage },
+  foot60: { t: '족욕 1분 하기', goal: 60, v: () => D.footSec, f: mmss },
+  read2: { t: '만화책 2권 읽기', goal: 2, v: () => today.manga },
+  set: { t: '라면 + 식혜 세트', goal: 2, v: () => Math.min(1, today.ramen) + Math.min(1, today.sikhye) },
+  oneshot: { t: '식혜 원샷 성공', goal: 1, v: () => D.oneshot },
+  bingsu: { t: '팥빙수 먹기', goal: 1, v: () => today.bingsu },
+};
+const MISSION_POOLS = [['char120', 'combo3', 'egg3', 'sweat300', 'stamp5'], ['sleep60', 'massage', 'foot60', 'read2'], ['set', 'oneshot', 'bingsu']];
+function missionsFor(day) { const r = seeded(hashStr('jjim:' + day)); return MISSION_POOLS.map(p => p[Math.floor(r() * p.length)]); }
+
+// ── 이벤트 방송 (한국 시간 기준, 같은 시각엔 모두 같은 이벤트) ──
+const EVENTS = [
+  { id: 'char', zone: 'char', fx: 'sweat', t: '숯가마에 새로 불 넣었습니다 — 5분간 땀 2배', s: '땀 2배' },
+  { id: 'ramen', zone: 'snack', fx: 'meal', t: '식당 라면 타임세일 — 지금 먹으면 개운함 2배', s: '먹으면 개운함 2배' },
+  { id: 'sleep', zone: 'sleep', fx: 'rest', t: '수면실 소등 — 지금 자면 개운함 2배', s: '잠 보너스' },
+  { id: 'ice', zone: 'ice', fx: 'cool', t: '얼음방 얼음 리필 — 냉온욕 콤보 2배', s: '콤보 2배' },
+  { id: 'kiln', zone: 'kiln', fx: 'sweat', t: '불가마에 장작 넣었습니다 — 5분간 땀 2배', s: '땀 2배' },
+  { id: 'foot', zone: 'foot', fx: 'rest', t: '족욕카페 새 물 받았어요 — 족욕 개운함 2배', s: '족욕 2배' },
+];
+function currentEvent() {
+  const m = kstMinutes(), slot = Math.floor(m / 15);
+  if (m - slot * 15 >= 5) return null;
+  const ev = EVENTS[hashStr(kstDay() + ':' + slot) % EVENTS.length];
+  return { ...ev, slot, left: (slot * 15 + 5 - m) * 60 };
+}
+let EV = null;
+const evMul = (fx, zid) => (EV && EV.fx === fx && EV.zone === zid ? 2 : 1);
+
+// ── 체온 · 개운함 ──
+const HOT = { kiln: 0.022, hwangto: 0.014, char: 0.035, salt: 0.011, cyp: 0.009 };
+const GM = { temp: 36.5, together: false, dizzyCD: 0, warned: false, hotT: 0, iceT: 0, hotArmed: false, iceArmed: false, lastHotEnd: -1e9, lastColdEnd: -1e9, zoneId: 'lobby', sweatPostAt: 0, starsT: 0 };
+const overheated = () => GM.temp >= 38.6 && GM.dizzyCD > 0;
+function gainFresh(v, why) {
+  const mul = GM.together ? 1.2 : 1, g = v * mul;
+  D.fresh = Math.min(100, D.fresh + g); addXP(g * 3);
+}
+let lastLv = myLv();
+function addXP(n) {
+  G.xp += n; const lv = myLv();
+  if (lv > lastLv) { lastLv = lv; levelUp(lv); }
+}
+
+// ── 화면 요소 ──
+const $ = id => document.getElementById(id);
+const tempEl = $('tempchip'), misEl = $('mischip'), misPanel = $('mispanel'), mgEl = $('mg'), mgc = $('mgc'), sheetEl = $('sheet');
+const stampFx = $('stampfx'), lvupEl = $('lvup'), heatEl = $('heat');
+function celebrate(el, ms = 2200) { el.hidden = false; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go'); clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; }, ms); }
+function stamp(id) {
+  if (D.stamps[id]) return;
+  const d = new Date(nowMs() + 9 * 3600e3);
+  D.stamps[id] = `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+  const s = STAMPS.find(x => x[0] === id), n = Object.keys(D.stamps).length;
+  stampFx.innerHTML = `<div class="stamp-ink"><span>찜</span><small>${s[1]}</small></div><p>${s[1]} 도장 쾅! <b class="num">${n} / ${STAMPS.length}</b></p>`;
+  celebrate(stampFx, 2000); SFX.stamp(); haptic([30, 40, 20]); addXP(25); saveG();
+  if (n === STAMPS.length && !D.master) {
+    D.master = true; addXP(150); saveG();
+    setTimeout(() => { showLED('오늘의 찜질 마스터'); toast('스탬프 9개 완성! 오늘 하루 이름표에 찜질 마스터가 붙어요', 4); SFX.levelup(); offerShare(true); }, 2100);
+  }
+}
+function levelUp(lv) {
+  const un = [];
+  for (const k of COS_KEYS) COS[k].forEach(o => { if (o.lv === lv) un.push(`${COS_NAME[k]} · ${o.n}`); });
+  const tt = TITLES.find(t => t[0] === lv);
+  lvupEl.innerHTML = `<small>LEVEL UP</small><b>Lv.${lv} · ${titleOf(lv)}</b>${tt ? '<em>새 칭호</em>' : ''}${un.length ? `<p>새 꾸미기: ${un.join(', ')}</p>` : ''}`;
+  celebrate(lvupEl, 2800); SFX.levelup(); haptic([20, 30, 20, 30, 40]);
+  for (let i = 0; i < 10; i++) setTimeout(() => emitSpark(player, 0xffc040), i * 80);
+}
+function missionTick() {
+  for (const id of missionsFor(D.d)) {
+    const M = MISSIONS[id]; if (D.missions[id] || M.v() < M.goal) continue;
+    D.missions[id] = 1; addXP(60); saveG();
+    showLED('미션 완료'); toast(`미션 완료 · ${M.t} (+60 XP)`, 3); SFX.mission(); haptic([15, 30, 15]);
+  }
+}
+
+// ── 사운드 추가 ──
+Object.assign(SFX, {
+  stamp() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; tone(130, t, 0.25, 0.6, 'sine', o, 55); noiseHit(t, 0.08, 0.35, 'lowpass', 900, 1, o); noiseHit(t + 0.01, 0.05, 0.15, 'highpass', 2500, 0.7, o); },
+  levelup() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; [523, 659, 784, 1046].forEach((f, i) => tone(f, t + i * 0.09, 0.35, 0.16, 'triangle', o)); },
+  mission() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; tone(880, t, 0.18, 0.15, 'triangle', o); tone(1320, t + 0.12, 0.3, 0.15, 'triangle', o); },
+  combo() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime; tone(300, t, 0.3, 0.2, 'sine', o, 900); tone(600, t + 0.15, 0.3, 0.12, 'sine', o, 1500); },
+  burp() { const o = sfxOut(1); if (!o) return; const t = A.ctx.currentTime, s = A.ctx.createOscillator(); s.type = 'sawtooth'; s.frequency.setValueAtTime(95, t); s.frequency.linearRampToValueAtTime(70, t + 0.5);
+    const f = A.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 500; f.Q.value = 2; const g = A.ctx.createGain(); env(g, t, 0.04, 0.45, 0.5); s.connect(f).connect(g).connect(o); s.start(t); s.stop(t + 0.6); },
+  ouch(vol = 1) { const o = sfxOut(vol); if (!o) return; const t = A.ctx.currentTime; tone(700, t, 0.35, 0.25, 'sine', o, 180); noiseHit(t, 0.06, 0.3, 'lowpass', 600, 1, o); },
+  good() { const o = sfxOut(1); if (!o) return; tone(1180, A.ctx.currentTime, 0.12, 0.12, 'triangle', o); },
+  bad() { const o = sfxOut(1); if (!o) return; tone(220, A.ctx.currentTime, 0.15, 0.15, 'square', o, 160); },
+});
+
+// 머리 위 별 (아야! · 어질어질)
+const starTex = canvasTex(128, 64, g => { g.fillStyle = '#ffd23a'; g.strokeStyle = '#3a2a0a'; g.lineWidth = 3;
+  for (const [x, y, r] of [[24, 34, 14], [64, 22, 16], [104, 36, 13]]) { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); } });
+function starsFor(ch) { if (!ch.stars) { ch.stars = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex, transparent: true, depthWrite: false })); ch.stars.scale.set(0.6, 0.3, 1); ch.stars.visible = false; scene.add(ch.stars); } return ch.stars; }
+function tickStars(ch, on, t) { if (!on && !ch.stars) return; const s = starsFor(ch); s.visible = on; if (on) { headWorld(ch, s.position); s.position.y += 0.42; s.position.x += Math.cos(t * 6) * 0.08; s.position.z += Math.sin(t * 6) * 0.08; } }
+
+// ═════════ 미니게임 ═════════
+const MG = { kind: null, t: 0, heat: 0, ring: 0, cool: 0, msg: '', msgT: 0, pos: 0, streak: 0, phase: 'aim', level: 100, started: false, holding: false, limit: 4.5, done: false };
+const mgActive = () => !!MG.kind;
+function mgOpen(kind, title, tapLabel) {
+  MG.kind = kind; MG.t = 0; MG.msg = ''; MG.msgT = 0; MG.done = false;
+  mgEl.querySelector('.mgt').textContent = title; mgEl.querySelector('[data-tap]').textContent = tapLabel;
+  mgEl.hidden = false; setActions([]); sizeMgc();
+}
+function mgClose() { MG.kind = null; MG.holding = false; mgEl.hidden = true; actionsKey = ''; }
+function sizeMgc() { const r = mgc.getBoundingClientRect(); mgc.width = Math.round(r.width * DPR); mgc.height = Math.round(r.height * DPR); }
+function mgMsg(m) { MG.msg = m; MG.msgT = 1.2; }
+
+// 1) 숯가마 버티기
+function startChar() {
+  if (state.mode !== 'sweat') doSweat();
+  MG.heat = 0; MG.ring = 0; MG.cool = 0;
+  mgOpen('char', '숯가마 버티기', '후~ (링이 맞을 때 탭)');
+}
+function charTap() {
+  if (MG.cool > 0) return; MG.cool = 0.3;
+  const r = 0.55 + 0.45 * Math.sin(MG.ring * Math.PI * 2 / 2.4);
+  if (Math.abs(r - 0.86) < 0.07) { MG.heat = Math.max(0, MG.heat - 16); mgMsg('후~'); SFX.breath(); SFX.good(); emitPuff(player); haptic(10); }
+  else { MG.heat = Math.min(100, MG.heat + 5); mgMsg('헉!'); SFX.bad(); }
+}
+function endChar(reason) {
+  const secs = Math.floor(MG.t); mgClose();
+  const best = secs > D.charBest; if (best) D.charBest = secs;
+  toast(`${reason === 'limit' ? '한계! ' : ''}${secs}초 버텼어요${best ? ' · 오늘 최고!' : ''}`, 3);
+  if (best && secs >= 1) { addXP(15); if (secs > D.posted.char) { D.posted.char = secs; boardPost('char', secs); } }
+  saveG(); if (state.mode === 'sweat') standUp();
+}
+// 2) 계란 타이밍
+const eggZone = () => { const w = Math.max(0.08, 0.17 - MG.streak * 0.012); return [0.7 - w / 2, 0.7 + w / 2]; };
+function startEgg() { MG.streak = 0; MG.phase = 'aim'; MG.pos = 0; mgOpen('egg', '계란 이마로 깨기', '깨기!'); }
+function eggTap() {
+  if (MG.phase !== 'aim' || state.mode !== 'free') return;
+  const [a, b] = eggZone(), p = MG.pos;
+  const res = p < a ? 'weak' : p > b ? 'ouch' : 'perfect';
+  MG.phase = 'anim'; state.eggRes = res; state.faceTo = -Math.PI / 2; setMode('egg'); state.eggRes = res;
+  if (net) net.event({ k: 'egg', r: res });
+}
+function eggResult(res) { // 계란 애니메이션이 끝날 때 불려요
+  if (res === 'perfect') { MG.streak++; D.perfect++; if (MG.streak > D.eggBest) { D.eggBest = MG.streak; } mgMsg(MG.streak > 1 ? `한 번에 쩍! ${MG.streak}연속` : '한 번에 쩍!'); gainFresh(4 * evMul('meal', 'snack')); stamp('snack'); }
+  else if (res === 'ouch') { mgMsg('아야!'); eggStreakEnd(); gainFresh(1); stamp('snack'); }
+  else { mgMsg('톡… 다시!'); eggStreakEnd(); }
+  MG.phase = 'aim'; saveG();
+}
+function eggStreakEnd() { if (MG.streak > 0 && D.eggBest > D.posted.egg) { D.posted.egg = D.eggBest; boardPost('egg', D.eggBest); } MG.streak = 0; }
+// 3) 식혜 원샷
+function startShot() { MG.level = 100; MG.started = false; MG.holding = false; MG.limit = 4.5; state.faceTo = -Math.PI / 2; setMode('oneshot'); mgOpen('shot', '식혜 원샷', '마시기 (연타·꾹)'); }
+function shotTap(down) {
+  if (MG.done) return;
+  if (down) { MG.started = true; MG.holding = true; MG.level -= 6; SFX.gulp(0.7); } else MG.holding = false;
+}
+function endShot(ok) {
+  MG.done = true; const left = Math.max(0, Math.round(MG.level));
+  addStat('sikhye'); GM.temp -= ok ? 0.6 : 0.3; gainFresh((ok ? 5 : 3) * evMul('meal', 'snack')); stamp('snack');
+  if (ok) { D.oneshot++; SFX.burp(); toast(`꺼억~ 원샷 성공! 오늘 식혜 ${today.sikhye}잔`, 3); haptic([20, 40, 60]); if (net) net.event({ k: 'drink' }); }
+  else toast(`아직 ${left}% 남았어요… 천천히 마셔요`, 2.6);
+  saveG(); saveStats();
+  setTimeout(() => { mgClose(); setMode('free'); }, 900);
+}
+function mgTick(dt, t) {
+  if (!MG.kind) return;
+  MG.t += dt; MG.msgT -= dt; MG.cool -= dt;
+  if (MG.kind === 'char') {
+    if (state.mode !== 'sweat') { endChar('quit'); return; }
+    MG.ring += dt; MG.heat += (2.6 + MG.t * 0.012) * dt; GM.temp += 0.03 * dt;
+    if (MG.heat >= 100) { endChar('limit'); return; }
+  } else if (MG.kind === 'egg') {
+    const per = Math.max(0.55, 1.25 * Math.pow(0.93, MG.streak));
+    if (MG.phase === 'aim') MG.pos = 0.5 - 0.5 * Math.cos(MG.t * Math.PI * 2 / per);
+  } else if (MG.kind === 'shot' && !MG.done) {
+    if (MG.started) { MG.limit -= dt; if (MG.holding) { MG.level -= 22 * dt; if (Math.random() < dt * 4) SFX.gulp(0.5); } }
+    if (MG.level <= 0) endShot(true); else if (MG.limit <= 0) endShot(false);
+  }
+  drawMg();
+}
+function drawMg() {
+  const g = mgc.getContext('2d'), W = mgc.width, H = mgc.height, k = DPR;
+  g.clearRect(0, 0, W, H); g.textBaseline = 'middle';
+  const stat = mgEl.querySelector('.mgs');
+  if (MG.kind === 'char') {
+    stat.textContent = mmss(MG.t);
+    const bw = W - 150 * k, bx = 12 * k, by = H / 2 - 9 * k;
+    g.fillStyle = '#2a221c'; g.fillRect(bx, by, bw, 18 * k);
+    const gr = g.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#ff9a40'); gr.addColorStop(1, '#d01818');
+    g.fillStyle = gr; g.fillRect(bx, by, bw * MG.heat / 100, 18 * k);
+    g.fillStyle = '#a8a29e'; g.font = `600 ${11 * k}px ${FONT}`; g.fillText('열기', bx, by - 10 * k);
+    const cx = W - 66 * k, cy = H / 2, R = 36 * k, r = 0.55 + 0.45 * Math.sin(MG.ring * Math.PI * 2 / 2.4);
+    g.strokeStyle = '#57534e'; g.lineWidth = 2 * k; g.setLineDash([4 * k, 4 * k]); g.beginPath(); g.arc(cx, cy, R * 0.86, 0, 7); g.stroke(); g.setLineDash([]);
+    g.strokeStyle = Math.abs(r - 0.86) < 0.07 ? '#5fd38a' : '#f5f5f4'; g.lineWidth = 4 * k; g.beginPath(); g.arc(cx, cy, R * r, 0, 7); g.stroke();
+  } else if (MG.kind === 'egg') {
+    stat.textContent = `연속 ${MG.streak} · 오늘 최고 ${D.eggBest}`;
+    const bx = 12 * k, bw = W - 24 * k, by = H / 2 - 12 * k, [a, b] = eggZone();
+    g.fillStyle = '#2a221c'; g.fillRect(bx, by, bw, 24 * k);
+    g.fillStyle = '#7a2a14'; g.fillRect(bx + bw * b, by, bw * (1 - b), 24 * k);
+    g.fillStyle = '#2f6b45'; g.fillRect(bx + bw * a, by, bw * (b - a), 24 * k);
+    g.fillStyle = '#a8a29e'; g.font = `600 ${11 * k}px ${FONT}`; g.fillText('약하게', bx, by - 10 * k); g.textAlign = 'right'; g.fillText('세게', bx + bw, by - 10 * k); g.textAlign = 'left';
+    g.fillStyle = '#fff'; g.fillRect(bx + bw * MG.pos - 3 * k, by - 6 * k, 6 * k, 36 * k);
+  } else if (MG.kind === 'shot') {
+    stat.textContent = MG.started ? `${Math.max(0, MG.limit).toFixed(1)}초` : '탭하면 시작';
+    const bx = 12 * k, bw = W - 24 * k, by = H / 2 - 12 * k;
+    g.fillStyle = '#2a221c'; g.fillRect(bx, by, bw, 24 * k);
+    g.fillStyle = '#d9c4a0'; g.fillRect(bx, by, bw * Math.max(0, MG.level) / 100, 24 * k);
+    g.fillStyle = '#a8a29e'; g.font = `600 ${11 * k}px ${FONT}`; g.fillText(`남은 식혜 ${Math.max(0, Math.round(MG.level))}%`, bx, by - 10 * k);
+  }
+  if (MG.msgT > 0 && MG.msg) { g.fillStyle = '#ffb23e'; g.font = `800 ${18 * k}px ${FONT}`; g.textAlign = 'center'; g.fillText(MG.msg, W / 2, H - 12 * k); g.textAlign = 'left'; }
+}
+{
+  const tap = mgEl.querySelector('[data-tap]');
+  tap.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); startAudio(); haptic(8);
+    if (MG.kind === 'char') charTap(); else if (MG.kind === 'egg') eggTap(); else if (MG.kind === 'shot') shotTap(true); });
+  const up = e => { if (MG.kind === 'shot') shotTap(false); };
+  tap.addEventListener('pointerup', up); tap.addEventListener('pointercancel', up); tap.addEventListener('pointerleave', up);
+  mgEl.querySelector('[data-quit]').addEventListener('click', e => { e.stopPropagation(); haptic(8);
+    if (MG.kind === 'char') endChar('quit'); else if (MG.kind === 'egg') { eggStreakEnd(); saveG(); mgClose(); } else if (MG.kind === 'shot') { if (!MG.done) endShot(false); } });
+  mgEl.addEventListener('pointerdown', e => e.stopPropagation());
+  addEventListener('keydown', e => { if (MG.kind && e.code === 'Space' && !e.repeat) { tap.dispatchEvent(new PointerEvent('pointerdown')); } });
+  addEventListener('keyup', e => { if (MG.kind === 'shot' && e.code === 'Space') shotTap(false); });
+}
+
+// ═════════ 매초 돌아가는 게임 틱 ═════════
+let gameAcc = 0, hudAcc = 0;
+function gameTick(dt, t) {
+  mgTick(dt, t);
+  const z = curZone, p = player.root.position, mode = state.mode;
+  // 날짜가 바뀌면(한국 자정) 오늘 기록 초기화
+  if (D.d !== kstDay()) { G.day = D = freshDay(); today = { d: kstDay(), sweat: 0, eggs: 0, sikhye: 0, ramen: 0, bingsu: 0, massage: 0, manga: 0, sleep: 0, zones: [], maxT: null }; saveG(); saveStats(); renderHUD(true); toast('오늘의 미션과 스탬프가 새로 시작됐어요', 3); }
+  // 체온
+  const hotZ = z.id === 'kiln' ? (inKiln(p) ? 'kiln' : null) : HOT[z.id] ? z.id : null;
+  if (hotZ) GM.temp += HOT[hotZ] * (mode === 'sweat' ? 1 : 0.45) * dt;
+  else if (z.id === 'ice') GM.temp -= (mode === 'cool' ? 0.07 : 0.04) * evMul('cool', 'ice') * dt;
+  else if (mode === 'foot') GM.temp += (36.3 - GM.temp) * 0.05 * dt;
+  else GM.temp += (36.5 - GM.temp) * 0.025 * dt;
+  GM.temp = THREE.MathUtils.clamp(GM.temp, 35.2, 40);
+  GM.dizzyCD = Math.max(0, GM.dizzyCD - dt);
+  if (GM.temp >= 39.3 && !mgActive() && mode !== 'dizzy' && GM.dizzyCD <= 0) {
+    if (TOGGLE[mode]) standUp();
+    setMode('dizzy'); GM.dizzyCD = 30; haptic([60, 40, 60]);
+    toast('어질어질… 잠깐 쉬었다 오세요 · 얼음방이나 식혜 어때요?', 4);
+  } else if (GM.temp >= 38.8 && !GM.warned && !mgActive()) { GM.warned = true; toast('슬슬 뜨거워요 · 너무 오래 있으면 어지러워요', 2.6); }
+  if (GM.temp < 38.4) GM.warned = false;
+  if (mode === 'dizzy' && state.modeT > 3.5) setMode('free');
+  // 개운함 · 스탬프 · 세션 기록
+  const tm = GM.together ? 1.2 : 1;
+  if (mode === 'sweat') {
+    const em = evMul('sweat', hotZ || z.id); addStat('sweat', dt * (em * tm - 1)); // 기본 1배는 update 에서 더함
+    gainFresh(dt * (z.id === 'char' ? 0.08 : 0.06) * em);
+    if (state.modeT >= 30 && (hotZ || SWEAT_ZONES.has(z.id))) stamp(hotZ || z.id);
+    GM.hotT += dt; if (GM.hotArmed && GM.hotT >= 10) { GM.hotArmed = false; combo(); }
+  }
+  if (z.id === 'ice') { GM.iceT += dt; if (GM.iceArmed && GM.iceT >= 8) { GM.iceArmed = false; combo(); } if (mode === 'cool') gainFresh(dt * 0.03); if (mode === 'cool' && state.modeT >= 20) stamp('ice'); }
+  if (['lie', 'sleep', 'massage', 'foot', 'read'].includes(mode)) gainFresh(dt * 0.035 * (mode === 'sleep' ? evMul('rest', 'sleep') : mode === 'foot' ? evMul('rest', 'foot') : 1));
+  if (mode === 'sleep') { D.sleepMax = Math.max(D.sleepMax, state.modeT); if (state.modeT >= 60) stamp('sleep'); }
+  if (mode === 'foot') { D.footSec += dt; if (state.modeT >= 30) stamp('foot'); }
+  GM.starsT = Math.max(0, GM.starsT - dt);
+  gameAcc += dt;
+  if (gameAcc >= 1) {
+    gameAcc = 0;
+    GM.together = !!z.short && [...remotes.values()].some(r => zoneAt(r.ch.root.position.x, r.ch.root.position.z) === z);
+    EV = currentEvent();
+    if (EV && D.evSeen !== EV.slot) { D.evSeen = EV.slot; announceEvent(EV); }
+    missionTick();
+    if (BOARD_ON && today.sweat >= 10 && Math.floor(today.sweat) > D.posted.sweat && performance.now() - GM.sweatPostAt > 120000) { GM.sweatPostAt = performance.now(); D.posted.sweat = Math.floor(today.sweat); boardPost('sweat', Math.floor(today.sweat)); }
+    saveG();
+  }
+  // 체온 화면 효과
+  const heat = THREE.MathUtils.clamp((GM.temp - 38.4) / 0.9, 0, 1);
+  heatEl.style.opacity = (heat * (0.75 + 0.25 * Math.sin(t * 4))).toFixed(3);
+  hudAcc -= dt; if (hudAcc <= 0) { hudAcc = 0.25; renderHUD(); }
+}
+function onZoneChange(prev, z) {
+  const now = performance.now();
+  if (prev && (HOT[prev.id] || prev.id === 'kiln') && GM.hotT >= 10) GM.lastHotEnd = now;
+  if (prev && prev.id === 'ice' && GM.iceT >= 8) GM.lastColdEnd = now;
+  GM.hotT = 0; GM.iceT = 0;
+  GM.iceArmed = z.id === 'ice' && now - GM.lastHotEnd < 60000;
+  GM.hotArmed = (HOT[z.id] || z.id === 'kiln') && now - GM.lastColdEnd < 60000;
+  if (EV && EV.zone === z.id) setTimeout(() => showLED(`${zoneLabel(z)} · ${EV.s}`), 50);
+}
+function combo() {
+  D.combo++; const b = 8 * evMul('cool', 'ice'); gainFresh(b); saveG();
+  showLED(`냉온욕 콤보 ×${D.combo}`); toast(`냉온욕 콤보 ×${D.combo}! 개운함 +${b}`, 2.6); SFX.combo(); haptic([15, 20, 15]);
+}
+function announceEvent(ev) {
+  if (A.ctx && A.ctx.state === 'running') { const t0 = A.ctx.currentTime + 0.05; for (const [f, d] of [[659.25, 0], [523.25, 0.55]]) tone(f, t0 + d, 1.4, 0.16, 'sine', A.amb); }
+  showLED(`띵동 · ${ZMAP[ev.zone].name} ${ev.s}`); toast(`안내 방송 · ${ev.t}`, 4.5); haptic(20);
+}
+// 식사·간식 끝났을 때 (update 에서 부름)
+function onMeal(kind) { gainFresh((kind === 'ramen' || kind === 'bingsu' ? 6 : 3) * evMul('meal', 'snack')); stamp('snack'); if (kind === 'drink') GM.temp -= 0.35; saveG(); }
+
+// ═════════ HUD ═════════
+let hudKey = '';
+function renderHUD(force) {
+  const lv = myLv(), base = lvNeed(lv), next = lvNeed(lv + 1), prog = (G.xp - base) / Math.max(1, next - base);
+  const mis = missionsFor(D.d), done = mis.filter(id => D.missions[id]).length;
+  const tC = GM.temp >= 38.8 ? '#ff5a3a' : GM.temp >= 37.8 ? '#ff9a40' : GM.temp <= 36.0 ? '#7fc0ff' : '#f5f5f4';
+  const key = [lv, Math.round(prog * 50), GM.temp.toFixed(1), done, GM.together, remotes.size, D.master].join('|');
+  if (key === hudKey && !force) return; hudKey = key;
+  chipEl.innerHTML = `<b>Lv.${lv}</b><span class="k">${titleOf(lv)}</span><i class="xp" style="--p:${(prog * 100).toFixed(0)}%"></i>`;
+  tempEl.innerHTML = `<b style="color:${tC}">${GM.temp.toFixed(1)}℃</b><i class="tb" style="--p:${(THREE.MathUtils.clamp((GM.temp - 35.5) / 4, 0, 1) * 100).toFixed(0)}%;--c:${tC}"></i>`;
+  misEl.innerHTML = `<span class="k">미션</span><b>${done}/3</b>`;
+  if (!onlineEl.hidden && !onlineEl.classList.contains('off')) onlineTxt.textContent = GM.together ? (state.mode === 'sweat' ? '같이 땀 빼는 중 +20%' : '같이 +20%') : `함께 ${onlineN}명`;
+  if (!misPanel.hidden) renderMissions();
+  if (!panelEl.hidden) renderPanel();
+}
+function renderMissions() {
+  const mis = missionsFor(D.d);
+  const html = `<h3><span>오늘의 미션</span><span class="num">${D.d.slice(5).replace('-', '.')}</span></h3>` + mis.map(id => {
+    const M = MISSIONS[id], v = Math.min(M.goal, M.v()), f = M.f || (x => Math.floor(x)), ok = !!D.missions[id];
+    return `<div class="mis ${ok ? 'ok' : ''}"><div><b>${M.t}</b><span class="num">${ok ? '완료 · +60 XP' : `${f(v)} / ${f(M.goal)}`}</span></div><i style="--p:${(v / M.goal * 100).toFixed(0)}%"></i></div>`;
+  }).join('') + `<div class="row" style="margin-top:10px"><button class="btn sm" data-stamps>스탬프 ${Object.keys(D.stamps).length}/9</button></div>`;
+  if (misPanel.dataset.h !== html) { misPanel.innerHTML = html; misPanel.dataset.h = html; }
+}
+misEl.addEventListener('click', e => { e.stopPropagation(); haptic(8); panelEl.hidden = true; misPanel.hidden = !misPanel.hidden; if (!misPanel.hidden) { misPanel.dataset.h = ''; renderMissions(); } });
+misPanel.addEventListener('pointerdown', e => e.stopPropagation());
+misPanel.addEventListener('click', e => { if (e.target.closest('[data-stamps]')) { e.stopPropagation(); openStamps(); } });
+tempEl.addEventListener('click', e => { e.stopPropagation(); haptic(8); toast('체온: 뜨거운 방에선 오르고 얼음방·족욕·식혜로 내려요. 뜨거운 방 ↔ 얼음방을 1분 안에 오가면 냉온욕 콤보!', 4.5); });
+
+// ═════════ 시트: 스탬프 카드 · 꾸미기 · 랭킹 ═════════
+let sheetKind = null;
+function openSheet(kind, html, bottom) {
+  sheetKind = kind; sheetEl.className = 'ov' + (bottom ? ' bottom' : ''); sheetEl.innerHTML = `<div class="card pnl sheet" role="dialog">${html}</div>`; sheetEl.hidden = false;
+  panelEl.hidden = true; misPanel.hidden = true; helpEl.hidden = true;
+}
+function closeSheet() { sheetEl.hidden = true; sheetKind = null; }
+const CLOSE_BTN = '<button class="ib" data-close aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+function openStamps() {
+  const n = Object.keys(D.stamps).length;
+  openSheet('stamps', `<div class="sh-h"><h2>찜질 스탬프 랠리</h2>${CLOSE_BTN}</div>
+    <p class="note">방마다 제대로 머물면 도장이 찍혀요 · 한국 시간 자정에 새로 시작</p>
+    <div class="stampgrid">${STAMPS.map(([id, nm, how]) => `<div class="sc ${D.stamps[id] ? 'on' : ''}"><b>${nm}</b><small>${D.stamps[id] ? D.stamps[id] : how}</small>${D.stamps[id] ? '<i>찜</i>' : ''}</div>`).join('')}</div>
+    <p class="${D.master ? '' : 'note'}" style="margin:12px 0">${D.master ? '<b>오늘의 찜질 마스터!</b> 이름표에 표시돼요.' : `${n} / 9 · 다 모으면 오늘의 찜질 마스터`}</p>
+    <button class="btn acc" data-share-stamps style="width:100%">스탬프 카드 → 인스타 스토리</button>`);
+  prepareStory('stamps');
+}
+function cosHTML() {
+  const lv = myLv();
+  return `<div class="sh-h"><h2>꾸미기</h2>${CLOSE_BTN}</div><p class="note">Lv.${lv} ${titleOf(lv)} · 레벨이 오르면 더 열려요</p>` + COS_KEYS.map(k => `<h4>${COS_NAME[k]}</h4><div class="opts">${COS[k].map((o, i) => {
+    const lock = o.lv > lv, on = G.cos[k] === i, sw = o.c !== undefined ? `<i style="background:#${new THREE.Color(o.c).getHexString()}"></i>` : '';
+    return `<button class="opt ${on ? 'on' : ''}" data-cos="${k}:${i}" ${lock ? 'disabled' : ''}>${sw}${o.n}${lock ? ` <small>Lv.${o.lv}</small>` : ''}</button>`; }).join('')}</div>`).join('');
+}
+function openCos() { openSheet('cos', cosHTML(), true); }
+const RANK_KINDS = [['char', '숯가마 버티기', v => `${Math.round(v)}초`], ['sweat', '오늘 땀', v => mmss(v)], ['egg', '계란 연속', v => `${Math.round(v)}연속`]];
+let rankKind = 'char';
+const rankCache = {};
+async function openRank(kind = rankKind) {
+  rankKind = kind;
+  const tabs = `<div class="tabs">${RANK_KINDS.map(([k, n]) => `<button class="btn sm ${k === kind ? 'on' : ''}" data-rank="${k}">${n}</button>`).join('')}</div>`;
+  const body = c => openSheet('rank', `<div class="sh-h"><h2>오늘의 랭킹</h2>${CLOSE_BTN}</div>${tabs}${c}`);
+  body('<p class="note">불러오는 중…</p>');
+  const c = rankCache[kind];
+  let j = c && performance.now() - c.at < 30000 ? c.j : null;
+  if (!j) j = await boardGet(kind);
+  if (sheetKind !== 'rank' || rankKind !== kind) return;
+  if (!j) { body('<p class="note">랭킹을 불러오지 못했어요. 잠시 후 다시 열어 주세요.</p>'); return; }
+  rankCache[kind] = { j, at: performance.now() };
+  const f = RANK_KINDS.find(r => r[0] === kind)[2];
+  const rows = j.top.length ? j.top.map((r, i) => `<li class="${j.me && j.me.rank === i + 1 ? 'me' : ''}"><span class="num">${i + 1}</span><b>${esc(r.n)}</b><small>${esc(r.x || '')}</small><span class="num">${f(r.v)}</span></li>`).join('') : '<li class="empty">아직 기록이 없어요. 첫 번째가 되어 보세요!</li>';
+  body(`<ol class="rank">${rows}</ol><p class="note" style="margin-top:10px">${j.me ? `내 순위 <b>${j.me.rank}위</b> · ${f(j.me.v)} (총 ${j.total}명)` : '아직 내 기록이 없어요'} · 한국 시간 자정에 초기화</p>`);
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+sheetEl.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) { if (e.target === sheetEl) closeSheet(); return; } e.stopPropagation(); haptic(8);
+  if (b.dataset.close !== undefined) closeSheet();
+  else if (b.dataset.rank) openRank(b.dataset.rank);
+  else if (b.dataset.shareStamps !== undefined) { closeSheet(); shareStory('stamps'); }
+  else if (b.dataset.cos) {
+    const [k, i] = b.dataset.cos.split(':'); G.cos[k] = +i; saveG(); applyCos(player, G.cos);
+    if (k === 't') { me.look.t = COS.t[+i].c; LS.set('jjimmung-me-v1', me); }
+    sheetEl.querySelector('.card').innerHTML = cosHTML();
+  }
+});
+sheetEl.addEventListener('pointerdown', e => e.stopPropagation());
+
+// ═════════ 오늘의 랭킹 (서버 /board) ═════════
+const BOARD_ON = location.protocol === 'http:' || location.protocol === 'https:';
+const PID = (() => {
+  let id = LS.get('jjimmung-pid', '');
+  if (!/^[a-z0-9]{8,32}$/i.test(String(id))) { const a = 'abcdefghijklmnopqrstuvwxyz0123456789'; id = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => a[b % 36]).join(''); LS.set('jjimmung-pid', id); }
+  return id;
+})();
+const BOARD_LOG = [];
+const boardURL = () => new URL('/board', location.origin).href;
+async function boardPost(kind, v) {
+  if (!BOARD_ON) return; BOARD_LOG.push(['POST', kind, v]);
+  try {
+    const r = await fetch(boardURL(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ site: 'jjim', kind, id: PID, name: me.name, v, x: `Lv.${myLv()} ${titleOf(myLv())}` }) });
+    if (!r.ok) return; const j = await r.json(); rankCache[kind] = { j, at: performance.now() };
+    const prev = D.rank[kind]; const rank = j.me && j.me.rank;
+    if (rank) { D.rank[kind] = rank; saveG(); if (rank <= 10 && (!prev || prev > 10 || rank < prev)) { const nm = RANK_KINDS.find(x => x[0] === kind)[1]; setTimeout(() => { toast(`오늘 ${nm} ${rank}위!`, 3); SFX.mission(); }, 1200); } }
+  } catch (e) {}
+}
+async function boardGet(kind) {
+  if (!BOARD_ON) return null; BOARD_LOG.push(['GET', kind]);
+  try { const r = await fetch(`${boardURL()}?site=jjim&kind=${kind}&id=${PID}`); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+
+applyCos(player, G.cos);
 
 // ───────────────────────── 실시간 연결 ─────────────────────────
 /* ---------------- 함께 걷기 (실시간 서버) ----------------
@@ -2447,10 +3008,10 @@ function createNet({ site, name, look, onWelcome, onJoin, onState, onLeave, onEv
 }
 
 const onlineTxt = onlineEl.querySelector('span');
-let wasOnline = false;
-function showOnline(n) { onlineEl.hidden = false; onlineEl.classList.remove('off'); onlineTxt.textContent = `함께 ${n}명`; }
+let wasOnline = false, onlineN = 1;
+function showOnline(n) { onlineN = n; onlineEl.hidden = false; onlineEl.classList.remove('off'); onlineTxt.textContent = `함께 ${n}명`; renderStats(true); }
 const net = createNet({
-  site: 'jjim', name: me.name, look: me.look,
+  site: 'jjim', name: me.name, look: { ...me.look, lv: myLv(), ck: ckOf(G.cos), bd: D.master ? 1 : 0 },
   onWelcome(m) {
     clearRemotes();
     for (const p of m.peers || []) addRemote(p);
@@ -2461,7 +3022,7 @@ const net = createNet({
   onJoin(p) { if (addRemote(p)) toast(`${String(p.name || '손님').slice(0, 16)} 님이 들어왔어요`, 1.8); },
   onState(id, s) { const r = remotes.get(id); if (r) applyRemoteState(r, s, false); },
   onLeave(id) { removeRemote(id); },
-  onEvent(id, e) { const r = remotes.get(id); if (r && e && (e.k === 'egg' || e.k === 'drink') && !r.shot) r.shot = { k: e.k, T: 0 }; },
+  onEvent(id, e) { const r = remotes.get(id); if (r && e && (e.k === 'egg' || e.k === 'drink') && !r.shot) r.shot = { k: e.k, T: 0, res: ['perfect', 'weak', 'ouch'].includes(e.r) ? e.r : 'perfect' }; },
   onCount(n) { showOnline(n); },
   onStatus(ok) { if (ok) return; clearRemotes(); onlineEl.hidden = false; onlineEl.classList.add('off'); onlineTxt.textContent = '혼자 · 다시 연결 중'; },
 });
@@ -2501,13 +3062,15 @@ const ILL = {
   walk: `<svg viewBox="0 0 220 120" fill="none" stroke="#f5f5f4" stroke-width="2"><rect x="40" y="6" width="140" height="108" rx="10" stroke="#57534e"/><circle cx="78" cy="80" r="20" stroke-dasharray="4 4"/><circle cx="84" cy="74" r="9" fill="#f5f5f4"/><path d="M138 70h26M156 62l8 8-8 8M138 70l8-8M138 70l8 8" stroke="#ff7340"/><text x="77" y="30" text-anchor="middle" fill="#a8a29e" stroke="none" font-size="11">왼쪽: 걷기</text><text x="145" y="30" text-anchor="middle" fill="#a8a29e" stroke="none" font-size="11">오른쪽: 보기</text></svg>`,
   act: `<svg viewBox="0 0 220 120"><rect x="20" y="20" width="110" height="80" rx="4" fill="#1b1714" stroke="#3b2a1b"/><text x="75" y="66" fill="#ffb23e" font-size="16" font-weight="800" text-anchor="middle">숯가마 92℃</text><rect x="140" y="64" width="64" height="36" rx="6" fill="#d9481f"/><text x="172" y="87" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">땀 빼기</text></svg>`,
   together: `<svg viewBox="0 0 220 120" fill="#f5f5f4"><circle cx="70" cy="62" r="14"/><rect x="58" y="78" width="24" height="28" rx="4"/><circle cx="150" cy="62" r="14" fill="#a8a29e"/><rect x="138" y="78" width="24" height="28" rx="4" fill="#a8a29e"/><rect x="112" y="26" width="76" height="20" rx="4" fill="#16120f" stroke="#57534e"/><text x="150" y="40" fill="#fff" font-size="10" text-anchor="middle">노곤한 판다27</text></svg>`,
+  stamps: `<svg viewBox="0 0 220 120"><g font-size="10" text-anchor="middle" fill="#a8a29e">${['불가마', '숯가마', '얼음방', '수면실', '식당', '족욕'].map((n, i) => { const x = 40 + (i % 3) * 70, y = 34 + Math.floor(i / 3) * 52; return `<rect x="${x - 28}" y="${y - 22}" width="56" height="44" rx="4" fill="#0f0c0a" stroke="#3a332d"/><text x="${x}" y="${y + 14}">${n}</text>${i < 4 ? `<circle cx="${x}" cy="${y - 3}" r="14" fill="none" stroke="#c8321e" stroke-width="3"/><text x="${x}" y="${y + 2}" fill="#e0402a" font-size="13" font-weight="800">찜</text>` : ''}`; }).join('')}</g></svg>`,
   app: `<svg viewBox="0 0 220 120" fill="none" stroke="#f5f5f4" stroke-width="2"><rect x="80" y="6" width="60" height="108" rx="8" stroke="#57534e"/><rect x="92" y="22" width="16" height="16" rx="3" fill="#d9481f" stroke="none"/><rect x="112" y="22" width="16" height="16" rx="3" stroke="#57534e"/><rect x="92" y="42" width="16" height="16" rx="3" stroke="#57534e"/><text x="100" y="72" fill="#a8a29e" stroke="none" font-size="9" text-anchor="middle">찜멍</text></svg>`,
 };
 const TUT = () => [
-  { k: '1 / 4', t: '걸어 다니기', p: isTouch ? '화면 <b>왼쪽</b>을 누르면 그 자리에 조이스틱이 생겨요. <b>오른쪽</b>을 끌면 둘러볼 수 있어요.' : '<span class="kbd">W A S D</span> · 방향키로 걷고, 마우스로 끌어 둘러봐요. 동작은 <span class="kbd">Space</span>.', ill: ILL.walk },
-  { k: '2 / 4', t: '가까이 가면 버튼이 떠요', p: '숯가마·황토방에선 <b>땀 빼기</b>, 수면실에선 <b>잠자기</b>, 식당에선 <b>라면 먹기</b>, 매점에선 <b>계란 이마로 깨기</b>. 구역 이름은 위쪽 전광판에 떠요.', ill: ILL.act },
-  { k: '3 / 4', t: '말 없이, 같이', p: '채팅은 없어요. 다른 손님은 이름표로 보이고, 같은 공간에 조용히 함께 머물러요.', ill: ILL.together },
-  { k: '4 / 4', t: '앱처럼 쓰기', p: '', ill: ILL.app, install: true },
+  { k: '1 / 5', t: '걸어 다니기', p: isTouch ? '화면 <b>왼쪽</b>을 누르면 그 자리에 조이스틱이 생겨요. <b>오른쪽</b>을 끌면 둘러볼 수 있어요.' : '<span class="kbd">W A S D</span> · 방향키로 걷고, 마우스로 끌어 둘러봐요. 동작은 <span class="kbd">Space</span>.', ill: ILL.walk },
+  { k: '2 / 5', t: '가까이 가면 버튼이 떠요', p: '숯가마·황토방에선 <b>땀 빼기</b>, 수면실에선 <b>잠자기</b>, 식당에선 <b>라면 먹기</b>, 매점에선 <b>계란 이마로 깨기</b>. 구역 이름은 위쪽 전광판에 떠요.', ill: ILL.act },
+  { k: '3 / 5', t: '스탬프 · 미션 · 미니게임', p: '방마다 제대로 머물면 <b>도장</b>이 찍혀요. 매일 바뀌는 <b>오늘의 미션</b> 3개, 숯가마 <b>버티기</b>·계란 <b>타이밍</b>·식혜 <b>원샷</b>, 그리고 <b>오늘의 랭킹</b>. 물론 그냥 누워서 멍때려도 돼요.', ill: ILL.stamps },
+  { k: '4 / 5', t: '말 없이, 같이', p: '채팅은 없어요. 다른 손님은 이름표로 보이고, 같은 공간에 조용히 함께 머물러요.', ill: ILL.together },
+  { k: '5 / 5', t: '앱처럼 쓰기', p: '', ill: ILL.app, install: true },
 ];
 let tutStep = 0;
 function renderTut() {
@@ -2548,6 +3111,7 @@ function openHelp() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">찜멍</h2><button class="ib" data-close aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <p class="note" style="margin:0 0 12px">${me.name} 님 · 말 없이 같이 머무는 동네 찜질방</p>
     <button class="btn acc" data-share style="width:100%">오늘의 찜질 기록 → 인스타 스토리</button>
+    <div class="grid2" style="margin-top:6px"><button class="btn sm" data-stamps>스탬프 카드</button><button class="btn sm" data-cos>꾸미기</button>${BOARD_ON ? '<button class="btn sm" data-rank>오늘의 랭킹</button>' : ''}<button class="btn sm" data-mis>오늘의 미션</button></div>
     <h4>조작</h4><ul>${isTouch ? '<li>왼쪽을 누르면 조이스틱, 오른쪽을 끌면 둘러보기</li>' : '<li>WASD·방향키로 걷기, 마우스로 끌어 둘러보기, Space로 동작</li>'}<li>가까이 가면 오른쪽 아래에 동작 버튼이 떠요</li><li>움직이면 앉거나 누운 자리에서 일어나요</li></ul>
     <h4>앱으로 쓰기</h4>${installHTML()}
     <h4>더 보기</h4><div class="row"><button class="btn sm" data-tut>사용법 다시 보기</button><button class="btn sm" data-copy>링크 복사</button></div>
@@ -2561,21 +3125,35 @@ helpEl.addEventListener('click', e => {
   else if (b.dataset.copy !== undefined) copyLink();
   else if (b.dataset.install !== undefined) doInstall();
   else if (b.dataset.share !== undefined) shareStory();
+  else if (b.dataset.stamps !== undefined) openStamps();
+  else if (b.dataset.cos !== undefined) openCos();
+  else if (b.dataset.rank !== undefined) openRank();
+  else if (b.dataset.mis !== undefined) { helpEl.hidden = true; misEl.click(); }
 });
 document.getElementById('btnHelp').addEventListener('click', e => { e.stopPropagation(); haptic(8); openHelp(); });
-panelEl.addEventListener('click', e => { const b = e.target.closest('[data-share]'); if (b) { e.stopPropagation(); shareStory(); } });
+panelEl.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); haptic(8);
+  if (b.dataset.share !== undefined) shareStory(); else if (b.dataset.stamps !== undefined) openStamps(); else if (b.dataset.cos !== undefined) openCos(); else if (b.dataset.rank !== undefined) openRank();
+});
 chipEl.addEventListener('click', () => { if (!panelEl.hidden) prepareStory(); });
-offerEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); offerEl.hidden = true; if (b.dataset.share !== undefined) shareStory(); });
+offerEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); offerEl.hidden = true; if (b.dataset.share !== undefined) shareStory(offerEl.dataset.v || 'day'); });
 let offerT = 0;
-function offerShare() {
-  if (offerDone || LS.get('jjimmung-offer', '') === todayKey()) return;
-  offerDone = true; LS.set('jjimmung-offer', todayKey()); offerEl.hidden = false; prepareStory();
+function offerShare(force) {
+  const key = force ? 'jjimmung-offer-m' : 'jjimmung-offer';
+  if ((!force && offerDone) || LS.get(key, '') === todayKey()) return;
+  offerDone = true; LS.set(key, todayKey()); offerEl.dataset.v = force ? 'stamps' : '';
+  offerEl.querySelector('p').textContent = force ? '스탬프 9개 완성! 스탬프 카드를 스토리로 남길까요?' : '오늘 찜질 기록을 스토리로 남겨 볼까요?';
+  offerEl.hidden = false; prepareStory(force ? 'stamps' : 'day');
   clearTimeout(offerT); offerT = setTimeout(() => { offerEl.hidden = true; }, 12000);
 }
 
 // ───────────────────────── 인스타 스토리 이미지 (1080×1920) ─────────────────────────
-let storyCache = null, storyBusy = null;
-function prepareStory() { if (!storyBusy) storyBusy = makeStory().then(b => { storyCache = { b, at: Date.now() }; storyBusy = null; return b; }).catch(e => { storyBusy = null; throw e; }); return storyBusy; }
+let storyCache = null, storyBusy = null, storyBusyV = null;
+function prepareStory(v = 'day') {
+  if (storyBusy && storyBusyV === v) return storyBusy;
+  storyBusyV = v; storyBusy = makeStory(v).then(b => { storyCache = { b, at: Date.now(), v }; storyBusy = null; return b; }).catch(e => { storyBusy = null; throw e; });
+  return storyBusy;
+}
 function snapshot(W, H) {
   const p = player.root.position, mode = state.mode;
   const hy = mode === 'lie' || mode === 'sleep' ? 0.5 : (HEAD_Y[mode] || 1.25) - 0.15;
@@ -2592,50 +3170,77 @@ function snapshot(W, H) {
   renderer.setPixelRatio(prevPR); fitView(); hidden.forEach(l => { l.visible = true; }); cull();
   return c;
 }
-async function makeStory() {
-  const W = 1080, H = 1920, z = curZone;
-  const shot = snapshot(W, 1240);
-  const d = new Date(), pad = n => String(n).padStart(2, '0');
-  const dateStr = `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+async function makeStory(variant = 'day') {
+  const W = 1080, H = 1920, z = curZone, isStamp = variant === 'stamps';
+  const shot = snapshot(W, isStamp ? 1040 : 1240);
+  const d = new Date(nowMs() + 9 * 3600e3), pad = n => String(n).padStart(2, '0');
+  const dateStr = `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())}  ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
   const hot = today.maxT ? ZMAP[today.maxT] : (z.temp > 0 ? z : null);
   const sw = Math.floor(today.sweat), swTxt = sw >= 60 ? `${Math.floor(sw / 60)}분 ${sw % 60}초` : `${sw}초`;
-  const rows = [['땀', swTxt], ['계란', `${today.eggs}개`], ['식혜', `${today.sikhye}잔`], ['라면', `${today.ramen}그릇`], ['둘러본 곳', `${today.zones.length}곳`], ['최고 온도', hot ? `${hot.name} ${hot.temp}℃` : '-']];
-  const strs = ['찜멍', '오늘의 찜질 기록', SITE_HOST, dateStr, zoneLabel(z), me.name, ...rows.flat()].join('');
+  const lv = myLv(), lvTxt = `Lv.${lv} ${titleOf(lv)}`;
+  const rows = [['땀', swTxt], ['계란', `${today.eggs}개`], ['식혜', `${today.sikhye}잔`], ['라면', `${today.ramen}그릇`], ['개운함', `${Math.floor(D.fresh)}`], ['최고 온도', hot ? `${hot.name} ${hot.temp}℃` : '-']];
+  const strs = ['찜멍', '오늘의 찜질 기록', '찜질 스탬프 랠리', '오늘의 찜질 마스터', '찜', SITE_HOST, dateStr, zoneLabel(z), me.name, lvTxt, ...rows.flat(), ...STAMPS.flat()].join('');
   try { await Promise.all([font(80, 800), font(40, 700), font(30, 600)].map(f => document.fonts.load(f, strs))); } catch (e) {}
   const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   g.fillStyle = '#0e0b09'; g.fillRect(0, 0, W, H);
   g.drawImage(shot, 0, 0);
-  const fade = g.createLinearGradient(0, 1000, 0, 1240); fade.addColorStop(0, 'rgba(14,11,9,0)'); fade.addColorStop(1, 'rgba(14,11,9,1)'); g.fillStyle = fade; g.fillRect(0, 1000, W, 240);
-  // 구역 전광판 (사진 위, 윗부분 250px 아래)
+  const fy = isStamp ? 820 : 1000, fh = isStamp ? 220 : 240;
+  const fade = g.createLinearGradient(0, fy, 0, fy + fh); fade.addColorStop(0, 'rgba(14,11,9,0)'); fade.addColorStop(1, 'rgba(14,11,9,1)'); g.fillStyle = fade; g.fillRect(0, fy, W, fh);
+  // 구역 전광판 (윗부분 250px 아래)
   g.font = font(46, 800); const zt = zoneLabel(z), zw = g.measureText(zt).width + 56;
   g.fillStyle = '#050403'; g.fillRect(60, 300, zw, 84); g.strokeStyle = '#3b2a1b'; g.lineWidth = 2; g.strokeRect(60, 300, zw, 84);
   g.fillStyle = '#ffb23e'; g.shadowColor = 'rgba(255,150,40,0.8)'; g.shadowBlur = 14; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(zt, 88, 344); g.shadowBlur = 0;
-  // 기록 영수증 (1180~1600)
-  const X0 = 60, X1 = W - 60, Y0 = 1180, Y1 = 1600;
+  const X0 = 60, X1 = W - 60, Y1 = 1600, Y0 = isStamp ? 930 : 1120, IW = X1 - X0 - 72;
   g.fillStyle = '#16120f'; g.fillRect(X0, Y0, X1 - X0, Y1 - Y0); g.strokeStyle = 'rgba(255,255,255,0.18)'; g.lineWidth = 2; g.strokeRect(X0, Y0, X1 - X0, Y1 - Y0);
   g.fillStyle = '#d9481f'; g.fillRect(X0, Y0, X1 - X0, 8);
-  g.fillStyle = '#ffffff'; g.font = font(80, 800); g.textAlign = 'left'; g.fillText('찜멍', X0 + 36, Y0 + 78);
-  g.font = font(30, 600); g.fillStyle = '#a8a29e'; g.fillText('오늘의 찜질 기록', X0 + 36 + g.measureText('찜멍').width * 2.7 + 24, Y0 + 82);
-  g.textAlign = 'right'; g.fillText(dateStr, X1 - 36, Y0 + 82);
-  g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(X0 + 36, Y0 + 132, X1 - X0 - 72, 2);
-  rows.forEach(([a, b], i) => {
-    const col = i % 2, row = (i / 2) | 0, x = X0 + 36 + col * ((X1 - X0 - 72) / 2 + 18), y = Y0 + 182 + row * 70, cw = (X1 - X0 - 72) / 2 - 18;
-    g.textAlign = 'left'; g.fillStyle = '#a8a29e'; g.font = font(30, 600); g.fillText(a, x, y);
-    g.textAlign = 'right'; g.fillStyle = '#ffffff'; g.font = font(40, 800);
-    let fs = 40; while (g.measureText(b).width > cw - 140 && fs > 24) { fs -= 2; g.font = font(fs, 800); }
-    g.fillText(b, x + cw, y);
-  });
-  g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(X0 + 36, Y1 - 58, X1 - X0 - 72, 2);
+  g.fillStyle = '#ffffff'; g.font = font(76, 800); g.textAlign = 'left'; g.fillText('찜멍', X0 + 36, Y0 + 74);
+  const wm = g.measureText('찜멍').width;
+  g.font = font(30, 600); g.fillStyle = '#a8a29e'; g.fillText(isStamp ? '찜질 스탬프 랠리' : '오늘의 찜질 기록', X0 + 36 + wm + 22, Y0 + 80);
+  g.textAlign = 'right'; g.fillText(dateStr, X1 - 36, Y0 + 80);
+  g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(X0 + 36, Y0 + 122, IW, 2);
+  const inkStamp = (cx, cy, r, label) => {
+    g.save(); g.translate(cx, cy); g.rotate(-0.24); g.strokeStyle = '#c8321e'; g.lineWidth = r * 0.12; g.beginPath(); g.arc(0, 0, r, 0, 7); g.stroke();
+    g.fillStyle = 'rgba(200,50,30,0.12)'; g.fill(); g.fillStyle = '#e0402a'; g.textAlign = 'center'; g.font = font(r * 0.9, 800); g.fillText('찜', 0, label ? -r * 0.12 : 0);
+    if (label) { g.font = font(r * 0.3, 800); g.fillText(label, 0, r * 0.52); } g.restore();
+  };
+  if (isStamp) {
+    if (D.master) { g.font = font(30, 800); const bt = '오늘의 찜질 마스터', bw = g.measureText(bt).width + 36; g.fillStyle = '#c8321e'; g.fillRect(X1 - 36 - bw, Y0 + 140, bw, 50); g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(bt, X1 - 36 - bw / 2, Y0 + 166); }
+    g.textAlign = 'left'; g.font = font(30, 700); g.fillStyle = '#fff'; g.fillText(`${Object.keys(D.stamps).length} / 9  ·  ${lvTxt}`, X0 + 36, Y0 + 166);
+    const cw = IW / 3, ch = 118, gy = Y0 + 210;
+    STAMPS.forEach(([id, nm], i) => {
+      const cx = X0 + 36 + (i % 3) * cw + cw / 2, cy = gy + Math.floor(i / 3) * (ch + 12) + ch / 2, on = D.stamps[id];
+      g.strokeStyle = 'rgba(255,255,255,0.16)'; g.lineWidth = 2; g.strokeRect(cx - cw / 2 + 6, cy - ch / 2, cw - 12, ch);
+      g.textAlign = 'center'; g.fillStyle = on ? 'rgba(255,255,255,0.45)' : '#d6d3d1'; g.font = font(30, 700); g.fillText(nm, cx, cy - 18);
+      g.font = font(22, 600); g.fillStyle = '#a8a29e'; g.fillText(on || '아직', cx, cy + 26);
+      if (on) inkStamp(cx, cy, 44);
+    });
+  } else {
+    g.textAlign = 'left'; g.font = font(30, 700); g.fillStyle = '#ff7340'; g.fillText(lvTxt + (D.master ? '  ·  오늘의 찜질 마스터' : ''), X0 + 36, Y0 + 164);
+    rows.forEach(([a, b], i) => {
+      const col = i % 2, row = (i / 2) | 0, x = X0 + 36 + col * (IW / 2 + 18), y = Y0 + 222 + row * 60, cw = IW / 2 - 18;
+      g.textAlign = 'left'; g.fillStyle = '#a8a29e'; g.font = font(30, 600); g.fillText(a, x, y);
+      g.textAlign = 'right'; g.fillStyle = '#ffffff'; g.font = font(38, 800);
+      let fs = 38; while (g.measureText(b).width > cw - 140 && fs > 24) { fs -= 2; g.font = font(fs, 800); }
+      g.fillText(b, x + cw, y);
+    });
+    const sy = Y0 + 410, step = IW / 9;
+    STAMPS.forEach(([id, nm], i) => {
+      const cx = X0 + 36 + step * i + step / 2;
+      if (D.stamps[id]) inkStamp(cx, sy, 26); else { g.strokeStyle = 'rgba(255,255,255,0.2)'; g.lineWidth = 2; g.beginPath(); g.arc(cx, sy, 24, 0, 7); g.stroke(); }
+      g.textAlign = 'center'; g.font = font(17, 600); g.fillStyle = '#a8a29e'; g.fillText(nm, cx, sy + 42);
+    });
+  }
+  g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(X0 + 36, Y1 - 58, IW, 2);
   g.textAlign = 'left'; g.font = font(28, 600); g.fillStyle = '#a8a29e'; g.fillText(me.name, X0 + 36, Y1 - 28);
   g.textAlign = 'right'; g.fillStyle = '#ffffff'; g.fillText(SITE_HOST, X1 - 36, Y1 - 28);
   return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/jpeg', 0.9));
 }
-async function shareStory() {
+async function shareStory(v = 'day') {
   haptic(15); helpEl.hidden = true; panelEl.hidden = true; offerEl.hidden = true;
-  let blob = storyCache && Date.now() - storyCache.at < 20000 ? storyCache.b : null;
-  if (!blob) { toast('스토리 이미지 만드는 중…', 1.5); try { blob = await prepareStory(); } catch (e) { toast('이미지를 만들지 못했어요', 2); return; } }
+  let blob = storyCache && storyCache.v === v && Date.now() - storyCache.at < 20000 ? storyCache.b : null;
+  if (!blob) { toast('스토리 이미지 만드는 중…', 1.5); try { blob = await prepareStory(v); } catch (e) { toast('이미지를 만들지 못했어요', 2); return; } }
   storyCache = null;
-  const file = new File([blob], `jjimmung-${todayKey()}.jpg`, { type: 'image/jpeg' });
+  const file = new File([blob], `jjimmung-${v === 'stamps' ? 'stamps-' : ''}${todayKey()}.jpg`, { type: 'image/jpeg' });
   copyLink(true).then(ok => toast(ok ? "링크가 복사됐어요 · 스토리에서 '링크' 스티커에 붙여 넣으세요" : '스토리에 사진을 올리고 링크 스티커를 붙여 보세요', 4));
   if (!IN_APP && navigator.canShare && navigator.share) {
     let can = false; try { can = navigator.canShare({ files: [file] }); } catch (e) {}
@@ -2734,6 +3339,9 @@ window.__jjim = {
     const url = renderer.domElement.toDataURL('image/jpeg', 0.92); renderer.setPixelRatio(pr); fitView(); cull(); return url;
   },
   get camYaw() { return camYaw; }, set camYaw(v) { camYaw = v; },
+  // 게임 요소 테스트용
+  G, get D() { return D; }, GM, MG, get EV() { return EV; }, BOARD_LOG, PID, missionsFor, currentEvent, kstDay, stamp, addXP, myLv, applyCos, openStamps, openCos, openRank, renderHUD,
+  setTimeOffset(ms) { timeOffset = ms; }, get timeOffset() { return timeOffset; },
 };
 </script>
 </body>

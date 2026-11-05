@@ -16,6 +16,8 @@
   #top{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:5;max-width:calc(100% - 130px)}
   #place{font-size:14px;font-weight:800;letter-spacing:.03em;padding:6px 14px;border-radius:999px;white-space:nowrap}
   #clock{font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap}
+  #online{font-size:12px;padding:4px 10px;border-radius:999px;display:none;white-space:nowrap}
+  #online.off{opacity:.75}
   #clock.rush{background:rgba(255,170,70,.92);color:#2a1806;font-weight:800;border-color:transparent}
   .round{position:fixed;width:44px;height:44px;border-radius:50%;color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer;z-index:6;padding:0}
   #soundBtn{top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right))}
@@ -52,7 +54,7 @@
   .cell canvas{width:100%;height:auto;display:block}
   .cell b{display:block;font-size:14px;color:#2b2620;margin:2px 0}
   #dexTotal{margin:10px 2px 0;font-size:13px;color:#5a5044;text-align:center}
-  @media (max-width:560px){#side{top:calc(98px + env(safe-area-inset-top))}#hint{bottom:calc(166px + env(safe-area-inset-bottom));white-space:normal;width:86vw;text-align:center;border-radius:14px}}
+  @media (max-width:560px){#side{top:calc(132px + env(safe-area-inset-top))}#hint{bottom:calc(166px + env(safe-area-inset-bottom));white-space:normal;width:86vw;text-align:center;border-radius:14px}}
 </style>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
@@ -60,7 +62,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top"><div id="place" class="glass">찌멍</div><div id="clock" class="glass"></div></div>
+<div id="top"><div id="place" class="glass">찌멍</div><div id="clock" class="glass"></div><div id="online" class="glass"></div></div>
 <button id="soundBtn" class="round glass" aria-label="소리 켜기/끄기">🔇</button>
 <button id="dexBtn" class="round glass" aria-label="물고기 도감">📖</button>
 <div id="side"><div id="counter" class="glass">오늘 0마리</div><button id="placeBtn" class="glass"></button></div>
@@ -778,9 +780,29 @@ function applyTime() {
 }
 
 /* ---------------- 플레이어 ---------------- */
-const player = makePerson(PL.ice
-  ? { style: 'winter', jacket: 0xf2f0ea, pants: 0x2e3442, hat: 0x3a7ac0, gloves: 0xd94a3a, scarf: 0xd94a3a, shoes: 0x4a3a2a }
-  : { shirt: 0xeae2d2, vest: 0x6b7a3a, pants: 0x3a4a5e, hat: 0xd8c49a });
+// 다른 사람은 나와 같은 모양에 옷 색만 달라요
+const LOOK_SET = {
+  lake: { shirt: [0xeae2d2, 0xd8e4ee, 0xf0d8c8, 0xcfe0c8, 0xe8d8f0, 0xf4e6b8], vest: [0x6b7a3a, 0x4a5a6a, 0x8a6a3a, 0x3a5a4a, 0x7a4a3a, 0x5a4a6a],
+          pants: [0x3a4a5e, 0x4a4038, 0x2e3a2e, 0x5a5048], hat: [0xd8c49a, 0xb8c8a0, 0x9ab0c8, 0xe0b090, 0x7a8a5a, 0xc8a0a0] },
+  ice:  { jacket: [0xf2f0ea, 0xd04a3a, 0x3a6ab0, 0x4a8a5a, 0xf2c230, 0x2a2a30, 0xe07aa0, 0x8a5ac0], pants: [0x2e3442, 0x30364a, 0x3a3430, 0x2a2a2a],
+          hat: [0x3a7ac0, 0xd04a6a, 0xf2c230, 0xe8e8e8, 0x4aa06a, 0xe07a30], gloves: [0xd94a3a, 0x2a2a2a, 0x2a4a7a, 0x8a3a3a, 0xf2f2f2], scarf: [0xd94a3a, 0x2a5a9a, 0xf2f2f2, 0xe0a030, 0x4a8a5a] },
+};
+const NICKS = {
+  lake: [['새벽', '졸린', '느긋한', '조용한', '행복한', '수줍은', '찌멍하는', '월척꿈꾸는'], ['붕어', '강태공', '찌돌이', '낚시꾼', '잉어', '메기', '수달', '왜가리']],
+  ice:  [['꽁꽁', '호호', '빙판', '털모자', '따끈한', '겨울', '손시린', '오들오들'], ['빙어', '산천어', '강태공', '낚시꾼', '펭귄', '호떡', '눈사람', '물개']],
+};
+function makeLook(src = {}) { // 받은 값은 정해진 색 목록 안에서만 허용
+  const set = LOOK_SET[PLACE_ID], out = PL.ice ? { style: 'winter', shoes: 0x4a3a2a } : {};
+  for (const k in set) out[k] = set[k].includes(src[k]) ? src[k] : pick(set[k]);
+  return out;
+}
+const ME = (() => {
+  const key = `jjimeong.me.${PLACE_ID}`; let v = null;
+  try { v = JSON.parse(localStorage.getItem(key)); } catch (e) { }
+  if (!v || typeof v.name !== 'string') { const [a, b] = NICKS[PLACE_ID]; v = { name: `${pick(a)}${pick(b)}${Math.floor(rand(10, 99))}`, look: makeLook() }; try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { } }
+  v.look = makeLook(v.look); return v;
+})();
+const player = makePerson(ME.look);
 scene.add(player.root);
 const P = { pos: new THREE.Vector3(PL.ice ? 3.5 : 0, GROUND_Y, PL.ice ? 27.5 : 24), yaw: Math.PI, speed: 0 };
 player.root.position.copy(P.pos);
@@ -1044,14 +1066,15 @@ function releaseFish() {
   if (F.fish) { const p = F.fish.position; splash(p.x, F.spot.waterY, p.z, 10, 0.7); sfx.splash(0.5); scene.remove(F.fish); F.fish = null; }
   if (F.state === 'caught') { F.state = 'ready'; line.visible = false; bobber.visible = false; }
 }
-function holdPos(out) { // 잡은 물고기를 가슴 앞에 들고 있는 위치 (입이 위)
-  const s = F.spot; return out.set(s.seat.x + s.dir.x * 0.6 + s.dir.y * 0.42, s.seat.y + 1.2, s.seat.z + s.dir.y * 0.6 - s.dir.x * 0.42);
+function holdPos(out, s = F.spot) { // 잡은 물고기를 가슴 앞에 들고 있는 위치 (입이 위)
+  return out.set(s.seat.x + s.dir.x * 0.6 + s.dir.y * 0.42, s.seat.y + 1.2, s.seat.z + s.dir.y * 0.6 - s.dir.x * 0.42);
 }
 function finishCatch() {
   F.state = 'caught';
   const sp = F.sp, cm = F.cm, badge = badgeOf(sp, cm);
   const r = store.dex[sp.id] ??= { count: 0, best: 0, first: Date.now() }; const isNew = r.count === 0; r.count++; r.best = Math.max(r.best, cm);
   const d = today(); if (!sp.junk) { d.n++; d.best = Math.max(d.best, cm); } save(); updateCounter();
+  if (net) net.event({ k: 'catch', sp: sp.id, cm, b: badge || '' });
   sfx.success(!!badge && !sp.junk);
   toast(`${badge ? `${badge}! ` : ''}${sp.name} ${cm.toFixed(1)}cm${isNew ? '<small>도감에 새로 올랐어요</small>' : ''}`, 2.4);
   // 사진 찍기 전에 물고기를 손끝 아래로 맞춘다
@@ -1131,7 +1154,7 @@ function updatePlayer(dt) {
   } else P.speed = damp(P.speed, 0, 10, dt);
   P.pos.y = damp(P.pos.y, surfaceY(P.pos.x, P.pos.z), 14, dt);
   player.root.position.copy(P.pos);
-  nearSpot = spots.find(s => !s.npc && s.trigger(P.pos.x, P.pos.z)) || null;
+  nearSpot = spots.find((s, i) => !s.npc && !spotTaken(i) && s.trigger(P.pos.x, P.pos.z)) || null;
 }
 function updatePose(dt) {
   if (F.state === 'idle') {
@@ -1307,6 +1330,178 @@ function updateCamera(dt) {
   sun.target.position.copy(P.pos); sun.position.copy(P.pos).addScaledVector(env.sunDir, 60); if (sun.position.y < 5) sun.position.y = 5;
 }
 
+/* ---------------- 다른 사람들 (실시간) ---------------- */
+/* ---------------- 함께 걷기 (실시간 서버) ----------------
+   서버: Cloudflare Worker /ws (Durable Object 방 하나당 최대 30명)
+   - file:// 로 열면 서버 없이 혼자 걷기만 해요.
+   - 상태는 최대 1초에 10번, 바뀌었을 때만 보내요(가만히 있으면 0번).
+   - 연결이 끊기면 몇 초 뒤 다시 연결하고, 그동안 혼자 걷기는 그대로.
+   메시지
+     보냄: {t:'hello',name,look,s} · {t:'s',s} · {t:'ev',e}
+     받음: {t:'welcome',id,room,peers:[{id,name,look,s}],n} · {t:'join',id,name,look,s}
+           {t:'s',id,s} · {t:'leave',id} · {t:'ev',id,e} · {t:'count',n}
+*/
+function createNet({ site, name, look, onWelcome, onJoin, onState, onLeave, onEvent, onCount, onStatus }) {
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
+  const room = new URLSearchParams(location.search).get('room') || '';
+  let ws = null, retry = 0, open = false, pingT = 0, lastSent = '', lastSentAt = 0, pending = null, lastState = null;
+  function url() {
+    return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?site=${site}${room ? `&room=${encodeURIComponent(room)}` : ''}`;
+  }
+  function connect() {
+    try { ws = new WebSocket(url()); } catch (e) { return later(); }
+    ws.onopen = () => {
+      retry = 0; open = true; lastSent = '';
+      ws.send(JSON.stringify({ t: 'hello', name, look, s: lastState }));
+      clearInterval(pingT); pingT = setInterval(() => { if (ws && ws.readyState === 1) ws.send('ping'); }, 25000);
+      onStatus && onStatus(true);
+    };
+    ws.onmessage = (e) => {
+      if (e.data === 'pong') return;
+      let m; try { m = JSON.parse(e.data); } catch (_) { return; }
+      if (m.t === 'welcome') onWelcome && onWelcome(m);
+      else if (m.t === 'join') onJoin && onJoin(m);
+      else if (m.t === 's') onState && onState(m.id, m.s);
+      else if (m.t === 'leave') onLeave && onLeave(m.id);
+      else if (m.t === 'ev') onEvent && onEvent(m.id, m.e);
+      else if (m.t === 'count') onCount && onCount(m.n);
+    };
+    ws.onclose = () => { const was = open; open = false; clearInterval(pingT); if (was || retry === 0) onStatus && onStatus(false); later(); };
+    ws.onerror = () => { try { ws.close(); } catch (_) { } };
+  }
+  function later() { const d = Math.min(10000, 1500 * 2 ** retry++) + Math.random() * 600; setTimeout(connect, d); }
+  function flush() {
+    if (!pending || !open) return;
+    const j = JSON.stringify(pending); pending = null;
+    if (j === lastSent) return;
+    lastSent = j; lastSentAt = performance.now();
+    ws.send(`{"t":"s","s":${j}}`);
+  }
+  connect();
+  return {
+    // 매 프레임 불러도 돼요: 100ms 간격 + 바뀐 경우에만 실제로 전송
+    state(s) {
+      lastState = s; pending = s;
+      if (performance.now() - lastSentAt >= 100) flush();
+    },
+    event(e) { if (open) ws.send(JSON.stringify({ t: 'ev', e })); },
+    get connected() { return open; },
+  };
+}
+
+function makeNameTag(text) {
+  const cv = document.createElement('canvas'); cv.width = 320; cv.height = 72; const c = cv.getContext('2d');
+  c.font = `800 34px ${FONT}`; const w = Math.min(312, c.measureText(text).width + 36);
+  c.fillStyle = 'rgba(20,28,38,.72)'; c.beginPath(); c.roundRect((320 - w) / 2, 8, w, 56, 28); c.fill();
+  c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, 160, 37);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); sp.scale.set(1.5, 0.34, 1); sp.renderOrder = 9; scene.add(sp); return sp;
+}
+const myTag = makeNameTag(ME.name); myTag.visible = false;
+const remotes = new Map();
+const FCODE = { idle: 0, sit: 1, ready: 1, casting: 1, waiting: 2, bite: 3, reeling: 4, caught: 5 };
+const num = v => typeof v === 'number' && Number.isFinite(v);
+function cleanState(s) {
+  if (!s || !num(s.x) || !num(s.y) || !num(s.z) || !num(s.r)) return null;
+  const p = Number.isInteger(s.p) && s.p >= 0 && s.p < spots.length && !spots[s.p].npc ? s.p : -1;
+  return { x: clamp(s.x, -60, 60), y: clamp(s.y, -1, 3), z: clamp(s.z, -60, 60), r: s.r, f: p >= 0 && Number.isInteger(s.f) ? clamp(s.f, 0, 5) : 0, p, b: typeof s.b === 'string' ? s.b : '' };
+}
+function addRemote(id, name, look, s) {
+  removeRemote(id);
+  const p = makePerson(makeLook(look || {})); scene.add(p.root);
+  const r = { id, name: String(name || '손님').slice(0, 16), p, tag: makeNameTag(String(name || '손님').slice(0, 16)), bubble: makeBubble(), bobber: makeBobber(), line: makeLine(),
+              s: cleanState(s), pos: new THREE.Vector3(), speed: 0, dy: 0, splashT: 0, fish: null, fishT: 0 };
+  if (r.s) { r.pos.set(r.s.x, r.s.y, r.s.z); p.root.rotation.y = r.s.r; }
+  remotes.set(id, r);
+}
+function removeRemote(id) {
+  const r = remotes.get(id); if (!r) return;
+  for (const o of [r.p.root, r.tag, r.bubble, r.bobber, r.line, r.fish]) if (o) scene.remove(o);
+  remotes.delete(id);
+}
+const clearRemotes = () => { for (const id of [...remotes.keys()]) removeRemote(id); };
+function spotTaken(i) { for (const r of remotes.values()) if (r.s && r.s.f > 0 && r.s.p === i) return true; return false; }
+const onlineEl = document.getElementById('online');
+function setOnline(n) { onlineEl.style.display = 'block'; onlineEl.className = 'glass'; onlineEl.textContent = n > 1 ? `지금 ${n}명 함께 있어요` : '지금 나 혼자 있어요'; myTag.visible = true; }
+function setOffline() { onlineEl.style.display = 'block'; onlineEl.className = 'glass off'; onlineEl.textContent = '혼자 걷는 중 · 다시 연결 중…'; myTag.visible = false; }
+function remoteEvent(id, e) {
+  const r = remotes.get(id); if (!r || !e || e.k !== 'catch' || !r.s || r.s.p < 0) return;
+  const sp = SP.find(x => x.id === e.sp); if (!sp || !num(e.cm)) return;
+  const cm = clamp(Math.round(e.cm * 10) / 10, sp.min, sp.max), badge = badgeOf(sp, cm), s = spots[r.s.p];
+  if (r.fish) scene.remove(r.fish);
+  r.fish = makeFish(sp, cm); scene.add(r.fish); r.fishT = 6;
+  say(r.bubble, `${badge ? badge + '! ' : ''}${sp.name} ${cm.toFixed(1)}cm`, 4);
+  const d = Math.hypot(P.pos.x - s.bob.x, P.pos.z - s.bob.z), v = clamp(1 - d / 40, 0.15, 1);
+  splash(s.bob.x, s.waterY, s.bob.z, 18, 1); sfx.splash(0.7 * v);
+  if (badge && !sp.junk) { toast(`🎉 ${r.name}님 ${badge}!<small>${sp.name} ${cm.toFixed(1)}cm</small>`, 3); sfx.success(true); }
+}
+function updateRemotes(dt) {
+  myTag.position.set(P.pos.x, P.pos.y + (F.state === 'idle' ? 2.2 : 1.9), P.pos.z);
+  for (const r of remotes.values()) {
+    const s = r.s, vis = !!s; r.p.root.visible = r.tag.visible = vis;
+    if (!s) { r.bobber.visible = r.line.visible = false; continue; }
+    const spot = s.p >= 0 ? spots[s.p] : null, fishing = !!spot && s.f > 0;
+    const ox = r.pos.x, oz = r.pos.z;
+    if (Math.hypot(s.x - r.pos.x, s.z - r.pos.z) > 8) r.pos.set(s.x, s.y, s.z);
+    r.pos.x = damp(r.pos.x, s.x, 9, dt); r.pos.y = damp(r.pos.y, s.y, 9, dt); r.pos.z = damp(r.pos.z, s.z, 9, dt);
+    const v = Math.hypot(r.pos.x - ox, r.pos.z - oz) / Math.max(dt, 1e-3); r.speed = damp(r.speed, fishing ? 0 : Math.min(1.6, v / 4), 8, dt);
+    let dy = s.r - r.p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); r.p.root.rotation.y += dy * (1 - Math.exp(-10 * dt));
+    r.p.root.position.copy(r.pos);
+    r.p.rodPivot.visible = fishing;
+    if (!fishing) {
+      r.p.phase += dt * r.speed * 9.5; const w = Math.sin(r.p.phase) * 0.7 * Math.min(1, r.speed);
+      applyPose(r.p, { legL: w, legR: -w, armLx: -w * 0.8, armRx: w * 0.8, armLz: 0, armRz: 0, bodyY: Math.abs(Math.cos(r.p.phase)) * 0.05 * Math.min(1, r.speed) }, dt, 14);
+    } else {
+      const tg = { ...SIT };
+      if (s.f === 3) tg.rod = PL.rodPitch + 0.08 * Math.sin(T * 30);
+      else if (s.f === 4) { tg.rod = 0.45 + 0.08 * Math.sin(T * 24); tg.armRx = -1.5; tg.armLx = -1.3; tg.rodK = 8; }
+      else if (s.f === 5) Object.assign(tg, _hold);
+      applyPose(r.p, tg, dt, 10);
+    }
+    // 찌
+    const showBob = fishing && (s.f === 2 || s.f === 3);
+    r.bobber.visible = showBob; r.line.visible = fishing && s.f >= 2;
+    if (showBob) {
+      const want = s.f === 3 ? (s.b === 'r' ? 0.32 : s.b === 'd' ? -0.38 : -0.8) : 0;
+      r.dy = damp(r.dy, want, s.f === 3 ? 6 : 12, dt);
+      r.bobber.position.set(spot.bob.x, spot.waterY + waveH(spot.bob.x, spot.bob.z, T) - WATERLINE * PL.bobScale + r.dy * PL.bobScale, spot.bob.z);
+    } else r.dy = 0;
+    if (fishing && s.f === 4) { r.splashT -= dt; if (r.splashT <= 0) { r.splashT = 0.3; splash(spot.bob.x, spot.waterY, spot.bob.z, 6, 0.6); } }
+    if (r.line.visible) {
+      r.p.tip.getWorldPosition(tipW);
+      if (showBob) { r.bobber.userData.top.getWorldPosition(_w); setLine(r.line, tipW, _w, PL.ice ? 0.02 : 0.45); }
+      else if (r.fish) setLine(r.line, tipW, r.fish.position, 0.03);
+      else setLine(r.line, tipW, _w.set(spot.bob.x, spot.waterY, spot.bob.z), 0.05);
+    }
+    // 잡은 물고기 잠깐 들고 있기
+    if (r.fish) {
+      r.fishT -= dt;
+      if (spot) { holdPos(r.fish.position, spot); r.fish.rotation.y = Math.atan2(spot.dir.x, spot.dir.y) + Math.PI / 2 + Math.sin(T * 2.5) * 0.25; }
+      if (r.fishT <= 0 || !fishing) { scene.remove(r.fish); r.fish = null; }
+    }
+    r.tag.position.set(r.pos.x, r.pos.y + (fishing ? 1.9 : 2.2), r.pos.z);
+    r.bubble.position.set(r.pos.x, r.pos.y + (fishing ? 2.5 : 2.8), r.pos.z);
+    if (r.bubble.visible && T > r.bubble.userData.until) r.bubble.visible = false;
+  }
+}
+function sendMyState() {
+  if (!net) return;
+  const f = FCODE[F.state] || 0, yaw = Math.atan2(Math.sin(player.root.rotation.y), Math.cos(player.root.rotation.y));
+  const s = { x: +P.pos.x.toFixed(2), y: +P.pos.y.toFixed(2), z: +P.pos.z.toFixed(2), r: +yaw.toFixed(2), f, p: f ? spots.indexOf(F.spot) : -1 };
+  if (f === 3) s.b = F.biteType[0];
+  net.state(s);
+}
+const net = createNet({
+  site: PLACE_ID, name: ME.name, look: ME.look,
+  onWelcome: m => { clearRemotes(); for (const p of m.peers || []) addRemote(p.id, p.name, p.look, p.s); setOnline(m.n); },
+  onJoin: m => addRemote(m.id, m.name, m.look, m.s),
+  onState: (id, s) => { const r = remotes.get(id); const c = cleanState(s); if (!r || !c) return; if (!r.s) { r.pos.set(c.x, c.y, c.z); r.p.root.rotation.y = c.r; } r.s = c; },
+  onLeave: id => removeRemote(id),
+  onEvent: remoteEvent,
+  onCount: n => setOnline(n),
+  onStatus: ok => { if (!ok) { clearRemotes(); setOffline(); } },
+});
+
 /* ---------------- 시작 ---------------- */
 for (const m of nightMats) m.userData.base = m.emissiveIntensity;
 applyTime(); updateCounter();
@@ -1315,7 +1510,7 @@ let clockAcc = 0, last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
   clockAcc += dt; if (clockAcc > 1) { clockAcc = 0; applyTime(); }
-  updatePlayer(dt); updatePose(dt); updateFishing(dt); updateNPCs(dt); updateFx(dt); updateCamera(dt);
+  updatePlayer(dt); updatePose(dt); updateFishing(dt); updateNPCs(dt); updateRemotes(dt); sendMyState(); updateFx(dt); updateCamera(dt);
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
@@ -1323,7 +1518,7 @@ requestAnimationFrame(frame);
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
 // 테스트·디버그용
-window.__jjimeong = { F, P, spots, npcs, onAct, env, forceBite: () => { F.biteAt = T; }, tp: (x, z) => { P.pos.set(x, P.pos.y, z); } };
+window.__jjimeong = { F, P, spots, npcs, onAct, env, remotes, net, ME, forceBite: () => { F.biteAt = T; }, tp: (x, z) => { P.pos.set(x, P.pos.y, z); } };
 </script>
 </body>
 </html>

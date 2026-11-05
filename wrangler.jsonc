@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jjimeong",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  // public 폴더의 화면 파일을 그대로 서비스하고, /ws 만 Worker 가 처리해요.
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  // 방 하나 = Durable Object 하나 (무료 플랜: SQLite 기반)
+  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "observability": { "enabled": true }
+}

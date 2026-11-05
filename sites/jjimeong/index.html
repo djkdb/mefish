@@ -163,6 +163,18 @@
   .ld-msg{font-size:14px;color:var(--mut);max-width:280px;line-height:1.5}
   #dbg{position:fixed;z-index:30;left:calc(8px + var(--sl));top:calc(72px + var(--st));background:rgba(0,0,0,.8);color:var(--bite);font:12px/1.45 ui-monospace,Menlo,monospace;
     padding:6px 8px;border-radius:4px;pointer-events:none;white-space:pre-wrap;max-width:min(92vw,420px)}
+  /* 태블릿(아이패드): 글자·버튼을 조금 키우고 너무 넓게 퍼지지 않게 */
+  @media (min-width:740px) and (min-height:700px){
+    #bar{max-width:760px;min-height:60px}
+    #place{font-size:17px}#clock{font-size:14px}
+    #chips{max-width:760px}.chip{font-size:14px;height:40px}#mChip,#baitBtn{height:48px}
+    #act{min-width:180px;height:76px;font-size:21px}
+    #act.hot,#act.reel{min-width:200px;height:124px}
+    #status{font-size:15px;max-width:420px}
+    #gauge{width:340px;font-size:13px;padding:10px 14px}.g-bar{height:18px}
+    #toast{font-size:17px}
+    #actWrap{right:calc(24px + var(--sr));bottom:calc(28px + var(--sb))}
+  }
   @media (orientation:landscape) and (max-height:500px){
     #bar{min-height:48px;padding:2px 4px 2px 10px;max-width:560px;left:calc(8px + var(--sl));right:auto;width:min(560px,calc(100vw - 16px))}
     #toast{top:calc(64px + var(--st))}
@@ -386,7 +398,8 @@ const nightGlows = [];    // 밤에 켜지는 빛 스프라이트
 const nightMats = [];     // 밤에 밝아지는 창문 등
 const swayU = { value: 0 };
 let waterMesh = null, waterBase = null, waterMat = null, fireflies = null, mists = [], snow = null, steams = [];
-const qualityHide = [], tentList = [], dynHoles = []; // 화질 낮출 때 숨길 것 · 텐트 위치 · 직접/남이 뚫은 구멍
+const qualityHide = [], tentList = [], dynHoles = [];
+const camBlockers = [], camFade = { roof: { mats: [], a: 1, hit: false }, pav: { mats: [], a: 1, hit: false }, arch: { mats: [], a: 1, hit: false } }; // 카메라가 뚫고 들어가면 안 되는 것: {b:[x0,x1,y0,y1,z0,z1]} 상자 · {c:[x,z,r,y0,y1]} 원기둥 · {s:[x,y,z,r]} 구 // 화질 낮출 때 숨길 것 · 텐트 위치 · 직접/남이 뚫은 구멍
 
 const makeRect = (cx, cz, dx, dz, hl, hw) => ({ cx, cz, dx, dz, hl, hw });
 function inRect(r, x, z, m = 0) { const qx = x - r.cx, qz = z - r.cz; const a = qx * r.dx + qz * r.dz, s = -qx * r.dz + qz * r.dx; return Math.abs(a) <= r.hl + m && Math.abs(s) <= r.hw + m; }
@@ -455,13 +468,13 @@ function scatterPines(snowy, avoid = []) {
   const outside = [], inside = [];
   const nOut = LOW ? 190 : 280;
   for (let i = 0; i < nOut; i++) { const a = rand(0, Math.PI * 2), r = rand(OUTER.r + 3, OUTER.r + 50); const x = Math.cos(a) * r, z = Math.sin(a) * r + OUTER.cz;
-    outside.push({ x, y: 0, z, s: rand(0.9, 1.7), ry: rand(0, 6) }); }
+    const os = rand(0.9, 1.7); outside.push({ x, y: 0, z, s: os, ry: rand(0, 6) }); if (r < OUTER.r + 16) camBlockers.push({ k: [x, 0, z, os] }); }
   let tries = 0;
   while (inside.length < 30 && tries++ < 2000) {
     const a = rand(0, Math.PI * 2), r = Math.sqrt(Math.random()) * (OUTER.r - 2.5); const x = Math.cos(a) * r, z = Math.sin(a) * r + OUTER.cz;
     if (inLake(x, z, 6) || avoid.some(o => Math.hypot(o.x - x, o.z - z) < o.r)) continue;
     if (inside.some(t => Math.hypot(t.x - x, t.z - z) < 4.5)) continue;
-    inside.push({ x, y: 0, z, s: rand(0.8, 1.2), ry: rand(0, 6) }); obstacles.push({ x, z, r: 0.45 });
+    const ts = rand(0.8, 1.2); inside.push({ x, y: 0, z, s: ts, ry: rand(0, 6) }); obstacles.push({ x, z, r: 0.45 }); camBlockers.push({ k: [x, 0, z, ts] });
   }
   buildPines(outside.concat(inside, extraPines), snowy);
 }
@@ -483,7 +496,7 @@ function buildSign(x, z, ry, lines, w = 2.6, h = 1.3) {
   for (const sx of [-w / 2 + 0.15, w / 2 - 0.15]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.9, 6), pm); p.position.set(sx, 0.95, -0.03); p.castShadow = true; g.add(p); }
   const board = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.06), lam(0x7a5a3a)); board.position.y = 1.35; board.castShadow = true; g.add(board);
   const face = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.1, h - 0.1), new THREE.MeshLambertMaterial({ map: signTex(lines) })); face.position.set(0, 1.35, 0.032); g.add(face);
-  obstacles.push({ x, z, r: 0.5 });
+  obstacles.push({ x, z, r: 0.5 }); camBlockers.push({ o: [x, z, Math.cos(ry), Math.sin(ry), w / 2 + 0.05, 0.12, 0.6, 2.05] });
   return g;
 }
 function makeBench(x, z, ry) {
@@ -772,7 +785,7 @@ function buildLakeWorld() {
       drums.push({ x: cx + (dx * a + px * b) * 1.4, y: 0.12, z: cz + (dz * a + pz * b) * 1.4, rz: Math.PI / 2, ry });
       posts.push({ x: cx + (dx * a + px * b) * 2.05, y: DOCK_Y + 1.0, z: cz + (dz * a + pz * b) * 2.05, sy: 2.1 });
     }
-    roofs.push({ x: cx, y: DOCK_Y + 2.45, z: cz, ry: ry + Math.PI / 4, c: TARPS[i % TARPS.length] });
+    roofs.push({ x: cx, y: DOCK_Y + 2.45, z: cz, ry: ry + Math.PI / 4, c: TARPS[i % TARPS.length] }); camBlockers.push({ c: [cx, cz, 3.0, DOCK_Y + 1.95, DOCK_Y + 2.95], fade: 'roof', under: true, ri: roofs.length - 1 });
     const seat = new THREE.Vector3(cx + dx * 0.9, DOCK_Y, cz + dz * 0.9); makeChair(seat, ry);
     buckets.push({ x: seat.x + px * 0.6 - dx * 0.2, y: DOCK_Y + 0.15, z: seat.z + pz * 0.6 - dz * 0.2, c: i % 2 ? 0xf2c230 : 0x3a7ac0 });
     const ccx = cx - dx * 1.4 - px * 1.2, ccz = cz - dz * 1.4 - pz * 1.2;
@@ -801,7 +814,9 @@ function buildLakeWorld() {
 
   instanced(new THREE.CylinderGeometry(0.07, 0.08, 1.3, 6), lam(0x5a4230), posts, true);
   instanced(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 12), lam(0x2e6fb5), drums);
-  instanced(new THREE.ConeGeometry(3.3, 0.8, 4, 1), lam(0xffffff, { flatShading: true }), roofs, true);
+  { const geo = new THREE.ConeGeometry(3.3, 0.8, 4, 1), f = camFade.roof; f.im = instanced(geo, lam(0xffffff, { flatShading: true }), roofs, true); f.list = roofs;
+    // 좌대 지붕은 한 덩어리(인스턴스)라, 카메라 앞의 지붕 하나만 반투명 복제본으로 바꿔 보여줘요
+    f.ghost = new THREE.Mesh(geo, lam(0xffffff, { flatShading: true, transparent: true, depthWrite: false })); f.ghost.visible = false; f.ghost.castShadow = true; scene.add(f.ghost); f.mats = [f.ghost.material]; }
   instanced(new THREE.CylinderGeometry(0.16, 0.13, 0.3, 12), lam(0xffffff), buckets);
   instanced(new THREE.BoxGeometry(0.55, 0.36, 0.36), lam(0xd94a3a), coolers);
   instanced(new THREE.BoxGeometry(0.57, 0.06, 0.38), lam(0xf4f4f4), lids);
@@ -849,10 +864,10 @@ function buildLakeWorld() {
   const board = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.55), new THREE.MeshLambertMaterial({ map: signTex([{ text: '낚시터 관리소', size: 70, y: 128 }], '#f6efe0', '#2a3a5a', 512, 256) }));
   board.position.set(0, 2.35, 2.03); cabin.add(board);
   cabin.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  obstacles.push({ x0: CB.x - 2.1, x1: CB.x + 2.1, z0: CB.z - 2.6, z1: CB.z + 2.6 });
+  obstacles.push({ x0: CB.x - 2.1, x1: CB.x + 2.1, z0: CB.z - 2.6, z1: CB.z + 2.6 }); camBlockers.push({ b: [CB.x - 2.4, CB.x + 2.4, 0, 4.2, CB.z - 2.9, CB.z + 2.9] });
   const VD = { x: CB.x + 2.8, z: CB.z - 3.4 };
   const vend = new THREE.Group(); vend.position.set(VD.x, GROUND_Y, VD.z); vend.rotation.y = Math.PI / 2; scene.add(vend);
-  const vb = new THREE.Mesh(new THREE.BoxGeometry(1, 1.9, 0.75), lam(0xc8302a)); vb.position.y = 0.95; vb.castShadow = true; vend.add(vb);
+  const vb = new THREE.Mesh(new THREE.BoxGeometry(1, 1.9, 0.75), lam(0xc8302a)); vb.position.y = 0.95; vb.castShadow = true; vend.add(vb); camBlockers.push({ b: [VD.x - 0.45, VD.x + 0.45, 0, 2.05, VD.z - 0.6, VD.z + 0.6] });
   const vpM = new THREE.MeshLambertMaterial({ color: 0xe8f4ff, emissive: 0xcfe8ff, emissiveIntensity: 0.2 }); nightMats.push(vpM);
   const vp = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.9), vpM); vp.position.set(0, 1.25, 0.38); vend.add(vp);
   const vg = glow(0xcfe8ff, 2.5); vg.position.set(VD.x + 0.5, 1.3, VD.z); scene.add(vg);
@@ -894,10 +909,10 @@ function buildIsland(posts, npcLook) {
   // 정자
   const pav = new THREE.Group(); pav.position.set(I.x, 0, I.z); scene.add(pav);
   const floor = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.3, 3.6), lam(0x9a6a3e)); floor.position.y = DOCK_Y - 0.15; pav.add(floor);
-  dockRects.push(makeRect(I.x, I.z, 0, 1, 1.8, 1.8));
+  dockRects.push(makeRect(I.x, I.z, 0, 1, 1.8, 1.8)); camBlockers.push({ b: [I.x - 2.5, I.x + 2.5, DOCK_Y + 1.9, DOCK_Y + 4.1, I.z - 2.5, I.z + 2.5], fade: 'pav', under: true });
   const pil = lam(0x8a3a2a);
   for (const [a, b] of [[-1.55, -1.55], [1.55, -1.55], [-1.55, 1.55], [1.55, 1.55]]) {
-    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 2.4, 8), pil); p.position.set(a, DOCK_Y + 1.2, b); pav.add(p); obstacles.push({ x: I.x + a, z: I.z + b, r: 0.14 }); }
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 2.4, 8), pil); p.position.set(a, DOCK_Y + 1.2, b); pav.add(p); obstacles.push({ x: I.x + a, z: I.z + b, r: 0.14 }); camBlockers.push({ c: [I.x + a, I.z + b, 0.3, 0, DOCK_Y + 2.4], thin: true }); }
   const red = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.08, 3.4), lam(0xb03a2a)); red.position.y = DOCK_Y + 2.05; pav.add(red);
   const band = new THREE.Mesh(new THREE.BoxGeometry(3.36, 0.28, 3.36), lam(0x2f7a6a)); band.position.y = DOCK_Y + 2.24; pav.add(band);
   const eave = new THREE.Mesh(new THREE.BoxGeometry(4.7, 0.12, 4.7), lam(0x4a3426)); eave.position.y = DOCK_Y + 2.42; pav.add(eave);
@@ -905,6 +920,7 @@ function buildIsland(posts, npcLook) {
   const top = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 6), lam(0x2a2e34)); top.position.y = DOCK_Y + 3.85; pav.add(top);
   for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { // 살짝 들린 처마 끝
     const tip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.45, 5), lam(0x3a4048)); tip.position.set(a * 2.3, DOCK_Y + 2.55, b * 2.3); tip.rotation.set(b * 0.9, 0, -a * 0.9); pav.add(tip); }
+  camFade.pav.mats = [red, band, eave, roof, top, ...pav.children.filter(m => m.geometry && m.geometry.type === 'ConeGeometry')].map(m => m.material);
   const rail = lam(0x8a5a32);
   for (const [w, d, x, z] of [[3.5, 0.06, 0, 1.75], [0.06, 3.5, -1.75, 0], [0.06, 3.5, 1.75, 0]]) { const r = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, d), rail); r.position.set(x, DOCK_Y + 0.5, z); pav.add(r); }
   const plq = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.36), new THREE.MeshLambertMaterial({ map: signTex([{ text: '찌멍정', size: 120, y: 128 }], '#2a2420', '#f2d9a0', 512, 256) }));
@@ -922,7 +938,7 @@ function buildIsland(posts, npcLook) {
   for (const sd of [-0.85, 0.85]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, L - 0.4), lam(0x8a5a32)); r.position.set(I.x + sd, DOCK_Y + 0.85, cz); scene.add(r); }
   // 벤치 · 소나무 · 섬 낚시꾼
   for (const a of [0.8, 2.5]) makeBench(I.x + Math.cos(a) * (I.r - 1.3), I.z + Math.sin(a) * (I.r - 1.3), Math.atan2(Math.cos(a), Math.sin(a)));
-  for (const [x, z] of [[I.x + 3.0, I.z - 1.0], [I.x - 1.7, I.z - 3.1]]) { extraPines.push({ x, y: GROUND_Y, z, s: 0.8, ry: rand(0, 6) }); obstacles.push({ x, z, r: 0.45 }); }
+  for (const [x, z] of [[I.x + 3.0, I.z - 1.0], [I.x - 1.7, I.z - 3.1]]) { extraPines.push({ x, y: GROUND_Y, z, s: 0.8, ry: rand(0, 6) }); camBlockers.push({ k: [x, GROUND_Y, z, 0.8] }); obstacles.push({ x, z, r: 0.45 }); }
   const dl = Math.hypot(-0.6, 0.8), dx = -0.6 / dl, dz = 0.8 / dl;
   const seat = new THREE.Vector3(I.x + dx * (I.r - 0.75), GROUND_Y, I.z + dz * (I.r - 0.75)); makeChair(seat, Math.atan2(dx, dz));
   spots.push({ n: 0, seat, dir: new THREE.Vector2(dx, dz), bob: new THREE.Vector3(seat.x + dx * 7, 0, seat.z + dz * 7), waterY: 0, trigger: () => false, npc: npcLook });
@@ -993,6 +1009,7 @@ function updateLife(dt) {
    월드: 얼음 호수 — 구멍 12곳 + 어디서나 직접 뚫기 · 축제 거리 · 썰매장
    ========================================================= */
 function buildTent(x, z, ry, c) {
+  camBlockers.push({ s: [x, GROUND_Y, z, 1.65] });
   const g = new THREE.Group(); g.position.set(x, GROUND_Y, z); g.rotation.y = ry; scene.add(g);
   const dome = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), lam(c)); dome.scale.y = 1.05; dome.castShadow = true; g.add(dome);
   const door = new THREE.Mesh(new THREE.CircleGeometry(0.55, 16, 0, Math.PI), lam(0x222831)); door.position.set(0, 0.01, 1.48); g.add(door);
@@ -1076,17 +1093,19 @@ function buildIceWorld() {
     const lg = glow(0xffb060, 2.6); lg.position.set(x + 0.8, GROUND_Y + 2.2, z + 0.4); scene.add(lg);
     for (let k = 0; k < 4; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0.0, depthWrite: false }));
       s.userData = { x: x - 0.5, z: z + 0.5, t: k / 4 }; scene.add(s); steams.push(s); }
-    obstacles.push({ x0: x - 1.5, x1: x + 1.5, z0: z - 1.4, z1: z + 1.4 });
+    obstacles.push({ x0: x - 1.5, x1: x + 1.5, z0: z - 1.4, z1: z + 1.4 }); camBlockers.push({ b: [x - 1.7, x + 1.7, 0, 2.75, z - 1.5, z + 1.5] });
   }
   const AZ = LAKE.rz + 2.4;
   for (const s of [-1, 1]) {
     const p = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 4.4, 10), lam(0xd94a3a)); p.position.set(s * 3.8, GROUND_Y + 2.2, AZ); p.castShadow = true; scene.add(p);
     const cap = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), lam(0xe8f4fb)); cap.position.set(s * 3.8, GROUND_Y + 4.5, AZ); scene.add(cap);
-    obstacles.push({ x: s * 3.8, z: AZ, r: 0.4 });
+    obstacles.push({ x: s * 3.8, z: AZ, r: 0.4 }); camBlockers.push({ c: [s * 3.8, AZ, 0.6, 0, 4.9], thin: true });
   }
   const bannerTex = signTex([{ text: '얼음낚시 축제', size: 120, y: 132 }], '#14467e', '#ffffff', 1024, 256);
   const banner = new THREE.Mesh(new THREE.BoxGeometry(7.9, 1.2, 0.16), lam(0x14467e)); banner.position.set(0, GROUND_Y + 3.9, AZ); banner.castShadow = true; scene.add(banner);
-  for (const s of [1, -1]) { const f = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 1.0), new THREE.MeshLambertMaterial({ map: bannerTex })); f.position.set(0, GROUND_Y + 3.9, AZ + s * 0.085); if (s < 0) f.rotation.y = Math.PI; scene.add(f); }
+  camBlockers.push({ b: [-4.2, 4.2, GROUND_Y + 3.2, GROUND_Y + 4.6, AZ - 0.35, AZ + 0.35], fade: 'arch' });
+  camFade.arch.mats.push(banner.material);
+  for (const s of [1, -1]) { const f = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 1.0), new THREE.MeshLambertMaterial({ map: bannerTex })); f.position.set(0, GROUND_Y + 3.9, AZ + s * 0.085); if (s < 0) f.rotation.y = Math.PI; scene.add(f); camFade.arch.mats.push(f.material); }
   const LZ = FZ + 3, PX = [-24.5, -10.5, 10.5, 24.5], bulbs = [];
   PX.forEach(x => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.4, 6), lam(0x555555)); p.position.set(x, GROUND_Y + 1.7, LZ); scene.add(p); obstacles.push({ x, z: LZ, r: 0.15 }); });
   for (let i = 0; i < PX.length - 1; i++) for (let k = 0; k <= 16; k++) { const t = k / 16; bulbs.push({ x: lerp(PX[i], PX[i + 1], t), y: GROUND_Y + 3.3 - Math.sin(t * Math.PI) * 0.7, z: LZ }); }
@@ -1094,6 +1113,7 @@ function buildIceWorld() {
   instanced(new THREE.SphereGeometry(0.07, 6, 5), bm, bulbs);
   for (let i = 0; i < 8; i++) { const g = glow(0xffc860, 1.8); g.position.set(lerp(-23, 23, i / 7), GROUND_Y + 2.9, LZ); scene.add(g); }
   // 눈사람
+  camBlockers.push({ c: [-5.4, LAKE.rz + 10.5, 0.75, 0, GROUND_Y + 2.45] });
   { const g = new THREE.Group(); g.position.set(-5.4, GROUND_Y, LAKE.rz + 10.5); scene.add(g); const w = lam(0xf8fbff), k = lam(0x222222);
     for (const [r, y] of [[0.55, 0.5], [0.4, 1.28], [0.28, 1.86]]) { const b = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), w); b.position.y = y; b.castShadow = true; g.add(b); }
     for (const s of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 5), k); e.position.set(s * 0.1, 1.92, 0.25); g.add(e); }
@@ -1257,6 +1277,9 @@ canvas.addEventListener('pointermove', e => {
   const k = e.pointerType === 'mouse' ? 0.006 : 0.008;
   camYaw -= (e.clientX - drag.x) * k; camPitch = clamp(camPitch + (e.clientY - drag.y) * 0.004, 0.12, 1.0); drag.x = e.clientX; drag.y = e.clientY;
 });
+// 트랙패드 두 손가락 스크롤 · 마우스 휠로도 둘러보기 (핀치 확대는 무시)
+canvas.addEventListener('wheel', e => { e.preventDefault(); if (F.state !== 'idle' || e.ctrlKey) return; const m = e.deltaMode === 1 ? 16 : 1;
+  camYaw -= clamp(e.deltaX * m, -80, 80) * 0.004; camPitch = clamp(camPitch + clamp(e.deltaY * m, -80, 80) * 0.0025, 0.12, 1.0); }, { passive: false });
 let holdPtr = null;
 const endPtr = e => { if (e.pointerId === holdPtr) { holdPtr = null; fight.hold = false; } if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; placeJoyGhost(); } if (e.pointerId === drag.id) drag.id = null; };
 canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointercancel', endPtr); canvas.addEventListener('lostpointercapture', endPtr);
@@ -1432,7 +1455,8 @@ function updateClock() {
   if (lastRush === false && env.rush) { toast('입질 타임 시작<small>30분 동안 입질이 잦아져요</small>', 3); sfx.rush(); }
   lastRush = env.rush;
 }
-const haptic = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) { } };
+// 사용자가 한 번이라도 화면을 누른 뒤에만 진동 (그 전엔 브라우저가 막고 경고를 남겨요)
+const haptic = p => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(p); } catch (e) { } };
 // 챔질·감기: 누르는 순간 바로 (손을 떼면 줄을 풀어요)
 actEl.addEventListener('pointerdown', e => {
   e.stopPropagation(); firstInteract();
@@ -2304,7 +2328,7 @@ function updateFishing(dt) {
       if (T >= F.biteAt) {
         F.state = 'bite'; F.t = 0; F.sp = rollSpecies(); F.cm = rollLen(F.sp); F.biteType = F.sp.bite;
         F.window = ({ rise: 1.6, sink: 1.15, dip: 1.05 })[F.biteType] + (IS_TOUCH ? 0.25 : 0);
-        sfx.tick(); ripple(bobber.position.x, s.waterY, bobber.position.z, 0.8); if (navigator.vibrate) navigator.vibrate(60);
+        sfx.tick(); ripple(bobber.position.x, s.waterY, bobber.position.z, 0.8); haptic(60);
       }
       break;
     }
@@ -2432,25 +2456,105 @@ function pickCamSide(s) {
   }
   return c.side;
 }
+// 화면 비율에 맞춘 시야: 세로 휴대폰은 좌우가 좁아 보이니 시야를 넓히고 조금 더 뒤에서 봐요
+const camFit = { k: 1, kf: 1 };
+function fitCamera() {
+  const a = innerWidth / innerHeight, rad = THREE.MathUtils.degToRad, deg = THREE.MathUtils.radToDeg;
+  const hT = a < 1 ? 74 : a < 1.45 ? 68 : 62; // 원하는 가로 시야(도)
+  const v = clamp(deg(2 * Math.atan(Math.tan(rad(hT / 2)) / a)), 46, 80), hEff = 2 * Math.atan(Math.tan(rad(v / 2)) * a);
+  camFit.k = clamp(Math.tan(rad(hT / 2)) / Math.tan(hEff / 2), 1, 1.5); camFit.kf = Math.min(camFit.k, 1.3);
+  camera.fov = v; camera.aspect = a; camera.updateProjectionMatrix();
+}
+fitCamera();
+// 카메라가 지붕·정자·텐트·포장마차·나무·관리소·땅 속으로 들어가지 않게: 머리에서 카메라까지 선을 따라가다 막히면 앞으로 당겨요
+let nearBlk = [], blkAcc = 9;
+const PINE_T = [[1.6, 2.2, 1.9], [1.25, 1.9, 2.9], [0.85, 1.6, 3.8]];
+function blkAt(o, x, y, z, m = 0) {
+  if (o.b) { const q = o.b; return x > q[0] - m && x < q[1] + m && y > q[2] - m && y < q[3] + m && z > q[4] - m && z < q[5] + m; }
+  if (o.c) { const q = o.c; return y > q[3] - m && y < q[4] + m && Math.hypot(x - q[0], z - q[1]) < q[2] + m; }
+  if (o.k) { // 소나무: 줄기 + 세 겹 원뿔
+    const q = o.k, d = Math.hypot(x - q[0], z - q[2]), yy = (y - q[1]) / q[3];
+    if (yy < 1.45 && yy > -0.2) return d < 0.32 * q[3] + m;
+    for (const [r, h, yc] of PINE_T) { const top = yc + h / 2; if (yy > yc - h / 2 && yy < top && d < r * q[3] * (top - yy) / h + 0.18 + m) return true; }
+    return false;
+  }
+  if (o.o) { const q = o.o, dx = x - q[0], dz = z - q[1], u = dx * q[2] - dz * q[3], v = dx * q[3] + dz * q[2]; return y > q[6] - m && y < q[7] + m && Math.abs(u) < q[4] + m && Math.abs(v) < q[5] + m; }
+  const q = o.s; return Math.hypot(x - q[0], y - q[1], z - q[2]) < q[3] + m;
+}
+function camBlocked(x, y, z, solidOnly) { for (const o of nearBlk) if ((!solidOnly || !o.fade) && blkAt(o, x, y, z)) return o; return null; }
+const camFloor = (x, z) => Math.max(!PL.ice && inLake(x, z, 0.4) && !inIsland(x, z) ? 0 : GROUND_Y, surfaceY(x, z)) + 0.4;
+const blkY0 = o => o.b ? o.b[2] : o.c[3], blkY1 = o => o.b ? o.b[3] : o.c[4];
+function underRule(oy, out) { for (const o of nearBlk) if (o.under && blkAt(o, out.x, out.y, out.z)) out.y = oy < blkY0(o) ? blkY0(o) - 0.12 : blkY1(o) + 0.15; }
+// 카메라 자리 정하기: 머리(o)에서 원하는 자리(out)까지 막힌 데가 있으면 앞으로 당겨요. 돌려주는 값 = 머리에서 떨어진 거리
+function clearCam(ox, oy, oz, out) {
+  // 머리가 이미 걸쳐 있는 것(나뭇가지 밑 등)은 피할 수 없으니 빼고 봐요
+  const solids = nearBlk.filter(o => !o.fade && !o.thin && !o.under && !blkAt(o, ox, oy, oz));
+  underRule(oy, out);
+  const n = 28; let hit = 1;
+  for (let i = 1; i <= n && hit === 1; i++) {
+    const t = i / n, x = lerp(ox, out.x, t), y = lerp(oy, out.y, t), z = lerp(oz, out.z, t);
+    for (const o of solids) if (blkAt(o, x, y, z, 0.12)) { hit = (i - 1) / n; break; }
+  }
+  if (hit < 1) { const t = Math.max(hit - 0.02, 0); out.set(lerp(ox, out.x, t), lerp(oy, out.y, t), lerp(oz, out.z, t)); }
+  // 가는 기둥은 시선을 막지 않게 두고, 카메라만 기둥 밖으로 밀어내요
+  for (const o of nearBlk) if (o.thin && blkAt(o, out.x, out.y, out.z)) { const q = o.c, dx = out.x - q[0], dz = out.z - q[1], d = Math.hypot(dx, dz) || 1; out.x = q[0] + dx / d * (q[2] + 0.05); out.z = q[1] + dz / d * (q[2] + 0.05); }
+  underRule(oy, out);
+  out.y = Math.max(out.y, camFloor(out.x, out.z));
+  return Math.hypot(out.x - ox, out.y - oy, out.z - oz);
+}
+// 지붕·현수막처럼 비켜줄 수 있는 것은 시선을 가리면 반투명하게
+function markFades(ox, oy, oz, c) {
+  for (const k in camFade) camFade[k].hit = false; const prevIdx = camFade.roof.idx; camFade.roof.idx = undefined;
+  for (let i = 1; i <= 16; i++) { const t = i / 16, x = lerp(ox, c.x, t), y = lerp(oy, c.y, t), z = lerp(oz, c.z, t);
+    for (const o of nearBlk) if (o.fade && blkAt(o, x, y, z)) { camFade[o.fade].hit = true; if (o.ri !== undefined && camFade.roof.idx === undefined) camFade.roof.idx = o.ri; } }
+  // 카메라가 지붕 바로 밑이면 지붕 아랫면이 화면 위를 덮으니 반투명하게
+  for (const o of nearBlk) if (o.under && c.y < blkY0(o) && blkAt(o, c.x, (blkY0(o) + blkY1(o)) / 2, c.z, 0.6)) { camFade[o.fade].hit = true; if (o.ri !== undefined && camFade.roof.idx === undefined) camFade.roof.idx = o.ri; }
+  if (camFade.roof.idx === undefined) camFade.roof.idx = camFade.roof.a < 1 ? prevIdx : undefined;
+  else if (prevIdx !== undefined && prevIdx !== camFade.roof.idx) roofSolo(prevIdx, false);
+}
+const _m4 = new THREE.Matrix4(), _m4b = new THREE.Matrix4();
+function roofSolo(i, on) { // on: 인스턴스를 숨기고 반투명 복제본을 그 자리에
+  const f = camFade.roof; if (!f.im || i === undefined) return;
+  if (on) { if (f.solo === i) return; if (f.solo !== undefined) roofSolo(f.solo, false); f.im.getMatrixAt(i, _m4); f.saved = _m4.clone(); f.ghost.matrixAutoUpdate = false; f.ghost.matrix.copy(_m4); f.ghost.material.color.set(f.list[i].c); f.ghost.visible = true; _m4b.makeScale(0, 0, 0); f.im.setMatrixAt(i, _m4b); f.im.instanceMatrix.needsUpdate = true; f.solo = i; }
+  else if (f.solo === i) { f.im.setMatrixAt(i, f.saved); f.im.instanceMatrix.needsUpdate = true; f.ghost.visible = false; f.solo = undefined; }
+}
+function updateCamFade(dt) {
+  if (camFade.roof.hit) roofSolo(camFade.roof.idx, true);
+  for (const k in camFade) { const f = camFade[k]; if (f.a === 1 && !f.hit) { if (k === 'roof' && f.solo !== undefined) roofSolo(f.solo, false); continue; } f.a = damp(f.a, f.hit ? 0.28 : 1, 8, dt); if (!f.hit && f.a > 0.99) f.a = 1;
+    for (const m of f.mats) { const tr = f.a < 0.99; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = f.a; m.depthWrite = !tr; } }
+}
+const _cam = new THREE.Vector3();
 function updateCamera(dt) {
+  blkAcc += dt; if (blkAcc > 0.4) { blkAcc = 0; nearBlk = camBlockers.filter(o => { const x = o.b ? (o.b[0] + o.b[1]) / 2 : o.c ? o.c[0] : o.k ? o.k[0] : o.o ? o.o[0] : o.s[0], z = o.b ? (o.b[4] + o.b[5]) / 2 : o.c ? o.c[1] : o.k ? o.k[2] : o.o ? o.o[1] : o.s[2]; return Math.hypot(x - P.pos.x, z - P.pos.z) < 22; }); }
   const fishing = F.state !== 'idle';
-  let tx, ty, tz, lx, ly, lz;
+  let lx, ly, lz, ox, oy, oz;
   if (!fishing) {
-    const dist = 6.6; lx = P.pos.x; ly = P.pos.y + 1.35; lz = P.pos.z;
-    tx = lx + Math.sin(camYaw) * Math.cos(camPitch) * dist; ty = ly + Math.sin(camPitch) * dist; tz = lz + Math.cos(camYaw) * Math.cos(camPitch) * dist;
+    const dist = 6.6 * camFit.k; lx = P.pos.x; ly = P.pos.y + 1.35; lz = P.pos.z; ox = lx; oy = ly + 0.3; oz = lz;
+    _cam.set(lx + Math.sin(camYaw) * Math.cos(camPitch) * dist, ly + Math.sin(camPitch) * dist, lz + Math.cos(camYaw) * Math.cos(camPitch) * dist);
   } else {
-    const s = F.spot, c = PL.camFish, d = s.dir, px = -d.y, pz = d.x;
+    const s = F.spot, c = PL.camFish, d = s.dir, px = -d.y, pz = d.x, kf = camFit.kf;
     if (s.camSide === undefined) s.camSide = pickCamSide(s);
-    tx = s.seat.x - d.x * c.back + px * s.camSide; ty = s.seat.y + c.up; tz = s.seat.z - d.y * c.back + pz * s.camSide;
-    const target = F.state === 'reeling' || F.state === 'caught' ? F.hook : s.bob;
+    _cam.set(s.seat.x - d.x * c.back * kf + px * s.camSide, s.seat.y + c.up * (1 + (kf - 1) * 0.6), s.seat.z - d.y * c.back * kf + pz * s.camSide);
+    ox = s.seat.x; oy = s.seat.y + 1.5; oz = s.seat.z;
+    const target = F.state === 'reeling' || F.state === 'caught' || F.state === 'fight' ? F.hook : s.bob;
     lx = lerp(s.seat.x, target.x, c.look); ly = lerp(s.seat.y + 1.1, s.waterY + 0.25, c.look); lz = lerp(s.seat.z, target.z, c.look);
     if (F.state === 'caught') { lx = lerp(s.seat.x, F.hook.x, 0.6); ly = s.seat.y + 1.1; lz = lerp(s.seat.z, F.hook.z, 0.6); }
   }
+  const want = Math.hypot(_cam.x - ox, _cam.y - oy, _cam.z - oz); let got = clearCam(ox, oy, oz, _cam);
+  if (got < Math.min(2.4, want * 0.6)) { // 너무 가까이 당겨지면: 조금 더 위에서 / 낚시 중이면 반대편 어깨에서 봐요
+    const base = _cam.clone(), alts = [];
+    if (!fishing) { const dist = 6.6 * camFit.k; for (const [dy, pp] of [[0, 0.75], [0, 1.1], [0.6, 0], [-0.6, 0], [1.2, 0.3], [-1.2, 0.3], [1.9, 0.3], [-1.9, 0.3]]) { const p = Math.max(camPitch, pp), y = camYaw + dy; alts.push(new THREE.Vector3(lx + Math.sin(y) * Math.cos(p) * dist, ly + Math.sin(p) * dist, lz + Math.cos(y) * Math.cos(p) * dist)); } }
+    else { const s = F.spot, c = PL.camFish, d = s.dir, kf = camFit.kf; for (const sd of [-s.camSide, s.camSide * 0.3]) alts.push(new THREE.Vector3(s.seat.x - d.x * c.back * kf - d.y * sd, s.seat.y + c.up * (1 + (kf - 1) * 0.6) + 0.4, s.seat.z - d.y * c.back * kf + d.x * sd)); }
+    for (const a of alts) { const g = clearCam(ox, oy, oz, a); if (g > got + 0.4) { got = g; base.copy(a); } }
+    _cam.copy(base);
+  }
+  markFades(ox, oy, oz, _cam); updateCamFade(dt);
   const k = fishing ? 3 : 6;
-  camera.position.x = damp(camera.position.x, tx, k, dt); camera.position.y = damp(camera.position.y, Math.max(ty, GROUND_Y + 0.5), k, dt); camera.position.z = damp(camera.position.z, tz, k, dt);
+  camera.position.x = damp(camera.position.x, _cam.x, k, dt); camera.position.y = damp(camera.position.y, _cam.y, k, dt); camera.position.z = damp(camera.position.z, _cam.z, k, dt);
+  // 따라가는 중에 막힌 곳에 걸리면 바로 맞춰요
+  if (camBlocked(camera.position.x, camera.position.y, camera.position.z, true) || camera.position.y < camFloor(camera.position.x, camera.position.z) - 0.05) camera.position.copy(_cam);
   camLook.x = damp(camLook.x, lx, k + 2, dt); camLook.y = damp(camLook.y, ly, k + 2, dt); camLook.z = damp(camLook.z, lz, k + 2, dt);
   camera.lookAt(camLook);
-  // 그림자 영역을 플레이어 주변으로
   sun.target.position.copy(P.pos); sun.position.copy(P.pos).addScaledVector(env.sunDir, 60); if (sun.position.y < 5) sun.position.y = 5;
 }
 
@@ -2706,7 +2810,7 @@ for (const m of nightMats) m.userData.base = m.emissiveIntensity;
 applyTime(); refreshMe(); updateMissionChip(); updateBaitChip();
 camera.position.set(P.pos.x, P.pos.y + 4, P.pos.z + 7); camLook.set(P.pos.x, 1.5, P.pos.z - 2);
 // 화면 크기 (휴대폰 주소창 · 회전 · 인앱 브라우저)
-function resize() { const w = innerWidth, h = innerHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); placeJoyGhost(); }
+function resize() { const w = innerWidth, h = innerHeight; fitCamera(); renderer.setSize(w, h); placeJoyGhost(); }
 addEventListener('resize', resize);
 if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 250));
@@ -2764,7 +2868,10 @@ if (WEB && 'serviceWorker' in navigator) addEventListener('load', () => navigato
 if (document.fonts) document.fonts.load('800 40px "Pretendard Variable"').catch(() => { });
 
 // 테스트·디버그용
-window.__jjimeong = { bobScreen: () => { const v = bobber.position.clone(); v.y += WATERLINE * PL.bobScale; v.project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, get T() { return T; }, setCamYaw: y => { camYaw = y; }, get wx() { return env.wx; }, fight, get prog() { return prog; }, addXP, levelInfo, todaysMissions, missionState, missionEvent, weatherAt, weatherWindows, BOSS, BAITS, bait, cycleBait, boardState, PID, rollSpecies, rollLen, openRanking, openStyle, get together() { return together; }, setBait: i => { baitI = i; updateBaitChip(); }, dbg: { inLake, inIsland, dockRects, inRect, obstacles, seatTaken, LAKE }, F, P, spots, npcs, onAct, env, remotes, net, ME, dynHoles, sled, QUAL, SLED, ISLAND, store, renderCard, renderStory, dexPhoto, shareStory, openTut, openMenu, openDex, openHelp,
+window.__jjimeong = { camProbe: (yaw, pitch) => { camYaw = yaw; camPitch = pitch; blkAcc = 9; updateCamera(10); const c = camera.position, head = new THREE.Vector3(P.pos.x, P.pos.y + 1.65, P.pos.z), d = c.clone().sub(head), len = d.length();
+    const rc = new THREE.Raycaster(head, d.normalize(), 0.05, len); rc.camera = camera; const hits = rc.intersectObjects(scene.children, true).filter(h => { let o = h.object; if (o.isSprite || o.isPoints || o.isLine || o.isLineSegments) return false; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (!m || m.transparent || m.visible === false || !o.visible) return false; while (o) { if (o === player.root) return false; o = o.parent; } return true; });
+    return { pos: c.toArray().map(v => +v.toFixed(2)), dist: +len.toFixed(2), inside: nearBlk.filter(o => !o.thin && blkAt(o, c.x, c.y, c.z) && !blkAt(o, head.x, head.y, head.z)).map(o => Object.keys(o)[0] + (o.fade || '')).join(','), headIn: nearBlk.some(o => !o.under && blkAt(o, head.x, head.y, head.z)), floor: +camFloor(c.x, c.z).toFixed(2), hits: hits.slice(0, 3).map(h => (h.object.geometry?.type || '?') + (h.object.geometry?.parameters ? JSON.stringify(Object.values(h.object.geometry.parameters).slice(0, 3).map(v => +(+v).toFixed(2))) : '') + '@' + h.distance.toFixed(1) + '[' + h.point.toArray().map(v => v.toFixed(1)) + ']'), fade: Object.keys(camFade).filter(k => camFade[k].hit).join(',') }; },
+  camInfo: () => ({ fov: camera.fov, k: camFit.k, pos: camera.position.toArray().map(v => +v.toFixed(2)), blocked: !!camBlocked(camera.position.x, camera.position.y, camera.position.z), fade: [camFade.roof.a, camFade.pav.a] }), bobScreen: () => { const v = bobber.position.clone(); v.y += WATERLINE * PL.bobScale; v.project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, get T() { return T; }, setCamYaw: y => { camYaw = y; }, get wx() { return env.wx; }, fight, get prog() { return prog; }, addXP, levelInfo, todaysMissions, missionState, missionEvent, weatherAt, weatherWindows, BOSS, BAITS, bait, cycleBait, boardState, PID, rollSpecies, rollLen, openRanking, openStyle, get together() { return together; }, setBait: i => { baitI = i; updateBaitChip(); }, dbg: { inLake, inIsland, dockRects, inRect, obstacles, seatTaken, LAKE }, F, P, spots, npcs, onAct, env, remotes, net, ME, dynHoles, sled, QUAL, SLED, ISLAND, store, renderCard, renderStory, dexPhoto, shareStory, openTut, openMenu, openDex, openHelp,
   get nearDyn() { return nearDyn; }, get nearSpot() { return nearSpot; }, startSled, shoreSpotAt, drillSpotAt, makeFish, SP,
   forceBite: () => { F.biteAt = T; }, tp: (x, z) => { P.pos.set(x, P.pos.y, z); }, face: (y) => { player.root.rotation.y = y; } };
 </script>

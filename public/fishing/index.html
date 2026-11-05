@@ -1334,7 +1334,7 @@ function updateCamera(dt) {
 /* ---------------- 함께 걷기 (실시간 서버) ----------------
    서버: Cloudflare Worker /ws (Durable Object 방 하나당 최대 30명)
    - file:// 로 열면 서버 없이 혼자 걷기만 해요.
-   - 상태는 최대 1초에 10번, 바뀌었을 때만 보내요(가만히 있으면 0번).
+   - 움직임은 예측+보정 방식: 바뀌었을 때만 보내요(가만히 있으면 0번).
    - 연결이 끊기면 몇 초 뒤 다시 연결하고, 그동안 혼자 걷기는 그대로.
    메시지
      보냄: {t:'hello',name,look,s} · {t:'s',s} · {t:'ev',e}
@@ -1342,47 +1342,81 @@ function updateCamera(dt) {
            {t:'s',id,s} · {t:'leave',id} · {t:'ev',id,e} · {t:'count',n}
 */
 function createNet({ site, name, look, onWelcome, onJoin, onState, onLeave, onEvent, onCount, onStatus }) {
+  // 무료 한도를 아끼는 규칙
+  // - 페이지를 2초 이상 보고 있거나 처음 터치/키를 누르면 그때 연결 (바로 나가는 사람은 0건)
+  // - 움직임은 "예측 + 보정": 방향·속도가 바뀌거나 예측이 0.35m 이상 어긋날 때만 전송
+  //   (곧게 걸으면 약 2초에 한 번, 멈춰 있으면 0번). 받는 쪽은 속도로 이어서 움직여 줘요.
+  // - 탭을 3분 넘게 숨겨 두면 연결을 끊고, 다시 보면 연결
+  // - 재연결은 점점 느리게(최대 60초), 숨겨진 탭에선 재연결 안 함
   if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
   const room = new URLSearchParams(location.search).get('room') || '';
-  let ws = null, retry = 0, open = false, pingT = 0, lastSent = '', lastSentAt = 0, pending = null, lastState = null;
-  function url() {
-    return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?site=${site}${room ? `&room=${encodeURIComponent(room)}` : ''}`;
-  }
+  let ws = null, retry = 0, open = false, started = false, pingT = 0, retryT = 0, hideT = 0;
+  let sent = null, sentAt = 0, sentDisc = '', prev = null, vx = 0, vz = 0, lastState = null, pending = false;
+  const r1 = v => Math.round(v * 10) / 10;
+  const MOTION = new Set(['x', 'y', 'z', 'r', 'vx', 'vz', '_t']);
+  const discOf = s => { const o = {}; for (const k in s) if (!MOTION.has(k)) o[k] = s[k]; return JSON.stringify(o); }; // 동작·자리 같은 '상태' 부분
+  const url = () => `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?site=${site}${room ? `&room=${encodeURIComponent(room)}` : ''}`;
   function connect() {
+    clearTimeout(retryT);
+    if (document.hidden || (ws && ws.readyState <= 1)) return;
     try { ws = new WebSocket(url()); } catch (e) { return later(); }
     ws.onopen = () => {
-      retry = 0; open = true; lastSent = '';
+      retry = 0; open = true; sent = null; sentDisc = '';
       ws.send(JSON.stringify({ t: 'hello', name, look, s: lastState }));
-      clearInterval(pingT); pingT = setInterval(() => { if (ws && ws.readyState === 1) ws.send('ping'); }, 25000);
+      if (lastState) { sent = lastState; sentAt = performance.now(); sentDisc = discOf(lastState); }
+      clearInterval(pingT); pingT = setInterval(() => { if (ws && ws.readyState === 1) ws.send('ping'); }, 50000);
       onStatus && onStatus(true);
     };
     ws.onmessage = (e) => {
       if (e.data === 'pong') return;
       let m; try { m = JSON.parse(e.data); } catch (_) { return; }
-      if (m.t === 'welcome') onWelcome && onWelcome(m);
-      else if (m.t === 'join') onJoin && onJoin(m);
-      else if (m.t === 's') onState && onState(m.id, m.s);
+      const now = performance.now();
+      if (m.t === 'welcome') { for (const p of m.peers || []) if (p.s) p.s._t = now; onWelcome && onWelcome(m); }
+      else if (m.t === 'join') { if (m.s) m.s._t = now; onJoin && onJoin(m); }
+      else if (m.t === 's') { if (m.s) m.s._t = now; onState && onState(m.id, m.s); }
       else if (m.t === 'leave') onLeave && onLeave(m.id);
       else if (m.t === 'ev') onEvent && onEvent(m.id, m.e);
       else if (m.t === 'count') onCount && onCount(m.n);
     };
-    ws.onclose = () => { const was = open; open = false; clearInterval(pingT); if (was || retry === 0) onStatus && onStatus(false); later(); };
+    ws.onclose = () => { const was = open; open = false; ws = null; clearInterval(pingT); if (was || retry === 0) onStatus && onStatus(false); later(); };
     ws.onerror = () => { try { ws.close(); } catch (_) { } };
   }
-  function later() { const d = Math.min(10000, 1500 * 2 ** retry++) + Math.random() * 600; setTimeout(connect, d); }
-  function flush() {
-    if (!pending || !open) return;
-    const j = JSON.stringify(pending); pending = null;
-    if (j === lastSent) return;
-    lastSent = j; lastSentAt = performance.now();
-    ws.send(`{"t":"s","s":${j}}`);
+  function later() {
+    if (document.hidden) return; // 다시 보일 때 연결
+    const d = Math.min(60000, 2000 * 2 ** retry++) * (0.8 + Math.random() * 0.4);
+    retryT = setTimeout(connect, d);
   }
-  connect();
+  function start() { if (started) return; started = true; connect(); }
+  const startT = setTimeout(start, 2000);
+  for (const ev of ['pointerdown', 'keydown', 'touchstart']) addEventListener(ev, () => { clearTimeout(startT); start(); }, { once: true, passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hideT = setTimeout(() => { if (ws) { retry = 0; try { ws.close(1000, 'hidden'); } catch (_) { } } }, 180000); }
+    else { clearTimeout(hideT); if (started && !ws) { retry = 0; connect(); } }
+  });
+  function send(s, now) {
+    sent = s; sentAt = now; sentDisc = discOf(s); pending = false;
+    ws.send(JSON.stringify({ t: 's', s }));
+  }
   return {
-    // 매 프레임 불러도 돼요: 100ms 간격 + 바뀐 경우에만 실제로 전송
+    // 매 프레임 불러도 돼요. 실제 전송은 필요할 때만.
     state(s) {
-      lastState = s; pending = s;
-      if (performance.now() - lastSentAt >= 100) flush();
+      const now = performance.now();
+      if (prev) { const dt = (now - prev.t) / 1000; if (dt > 0 && dt < 0.5) { const k = Math.min(1, dt * 8); vx += ((s.x - prev.x) / dt - vx) * k; vz += ((s.z - prev.z) / dt - vz) * k; } }
+      prev = { x: s.x, z: s.z, t: now };
+      const moving = Math.hypot(vx, vz) > 0.25;
+      const cur = Object.assign({}, s, { vx: moving ? r1(vx) : 0, vz: moving ? r1(vz) : 0 });
+      lastState = cur;
+      if (!open) return;
+      const since = now - sentAt, disc = discOf(s);
+      let need = !sent || disc !== sentDisc;
+      if (!need) {
+        const e = Math.min(1.2, since / 1000), px = sent.x + sent.vx * e, pz = sent.z + sent.vz * e;
+        const wasMoving = sent.vx !== 0 || sent.vz !== 0;
+        let da = Math.abs(s.r - sent.r); if (da > Math.PI) da = 2 * Math.PI - da;
+        need = Math.hypot(s.x - px, s.z - pz) > 0.35 || wasMoving !== moving || da > 0.5
+          || Math.abs((s.y || 0) - (sent.y || 0)) > 0.12 || (moving && since > 2000);
+      }
+      if (need && (disc !== sentDisc || since >= 200)) send(cur, now);
     },
     event(e) { if (open) ws.send(JSON.stringify({ t: 'ev', e })); },
     get connected() { return open; },
@@ -1404,7 +1438,7 @@ const num = v => typeof v === 'number' && Number.isFinite(v);
 function cleanState(s) {
   if (!s || !num(s.x) || !num(s.y) || !num(s.z) || !num(s.r)) return null;
   const p = Number.isInteger(s.p) && s.p >= 0 && s.p < spots.length && !spots[s.p].npc ? s.p : -1;
-  return { x: clamp(s.x, -60, 60), y: clamp(s.y, -1, 3), z: clamp(s.z, -60, 60), r: s.r, f: p >= 0 && Number.isInteger(s.f) ? clamp(s.f, 0, 5) : 0, p, b: typeof s.b === 'string' ? s.b : '' };
+  return { x: clamp(s.x, -60, 60), y: clamp(s.y, -1, 3), z: clamp(s.z, -60, 60), r: s.r, vx: num(s.vx) ? clamp(s.vx, -8, 8) : 0, vz: num(s.vz) ? clamp(s.vz, -8, 8) : 0, t: num(s._t) ? s._t : performance.now(), f: p >= 0 && Number.isInteger(s.f) ? clamp(s.f, 0, 5) : 0, p, b: typeof s.b === 'string' ? s.b : '' };
 }
 function addRemote(id, name, look, s) {
   removeRemote(id);
@@ -1442,10 +1476,14 @@ function updateRemotes(dt) {
     if (!s) { r.bobber.visible = r.line.visible = false; continue; }
     const spot = s.p >= 0 ? spots[s.p] : null, fishing = !!spot && s.f > 0;
     const ox = r.pos.x, oz = r.pos.z;
-    if (Math.hypot(s.x - r.pos.x, s.z - r.pos.z) > 8) r.pos.set(s.x, s.y, s.z);
-    r.pos.x = damp(r.pos.x, s.x, 9, dt); r.pos.y = damp(r.pos.y, s.y, 9, dt); r.pos.z = damp(r.pos.z, s.z, 9, dt);
+    // 받은 위치 + 속도 × 지난 시간 으로 이어서 예측 (최대 1.2초)
+    const e = Math.min(1.2, (performance.now() - s.t) / 1000);
+    let gx = s.x + s.vx * e, gz = s.z + s.vz * e;
+    if (!PL.ice && !fishing && !walkable(gx, gz)) { gx = s.x; gz = s.z; }
+    if (Math.hypot(gx - r.pos.x, gz - r.pos.z) > 8) r.pos.set(gx, s.y, gz);
+    r.pos.x = damp(r.pos.x, gx, 9, dt); r.pos.y = damp(r.pos.y, s.y, 9, dt); r.pos.z = damp(r.pos.z, gz, 9, dt);
     const v = Math.hypot(r.pos.x - ox, r.pos.z - oz) / Math.max(dt, 1e-3); r.speed = damp(r.speed, fishing ? 0 : Math.min(1.6, v / 4), 8, dt);
-    let dy = s.r - r.p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); r.p.root.rotation.y += dy * (1 - Math.exp(-10 * dt));
+    let dy = (s.vx || s.vz ? Math.atan2(s.vx, s.vz) : s.r) - r.p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); r.p.root.rotation.y += dy * (1 - Math.exp(-10 * dt));
     r.p.root.position.copy(r.pos);
     r.p.rodPivot.visible = fishing;
     if (!fishing) {

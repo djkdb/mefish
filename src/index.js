@@ -9,6 +9,8 @@ const SITES = new Set(['lake', 'ice', 'jjim']);
 const CAP = 30;
 const MAX_AUTO_ROOMS = 50;
 const MAX_MSG = 1500;
+const roomHint = {}; // 이 Worker 인스턴스가 기억하는 "최근 자리가 있던 방" (best-effort)
+const RATE_WINDOW = 5000, RATE_MAX = 60; // 5초에 60개(초당 12개) 넘게 보내면 끊어요
 
 export default {
   async fetch(request, env) {
@@ -23,10 +25,14 @@ export default {
       const res = await roomStub(env, `${site}:r:${named}`).fetch(withRoom(request, named));
       return res.status === 409 ? new Response('이 방은 꽉 찼어요', { status: 409 }) : res;
     }
-    // 자동 배정: 1번 방부터 자리가 있는 방을 찾아요.
-    for (let i = 1; i <= MAX_AUTO_ROOMS; i++) {
+    // 자동 배정: 최근에 자리가 있던 방부터 찾아요 (꽉 찬 방을 매번 1번부터 두드리면
+    // 그만큼 Durable Object 요청이 늘어 무료 한도를 빨리 써요). 가끔은 앞 방이 비었는지 다시 봐요.
+    const hint = Math.random() < 0.15 ? 1 : (roomHint[site] || 1);
+    for (let k = 0; k < MAX_AUTO_ROOMS; k++) {
+      const i = ((hint - 1 + k) % MAX_AUTO_ROOMS) + 1;
       const res = await roomStub(env, `${site}:auto:${i}`).fetch(withRoom(request, String(i)));
-      if (res.status !== 409) return res;
+      if (res.status !== 409) { roomHint[site] = i; return res; }
+      if (k >= 12) break; // 너무 많이 두드리지 않기
     }
     return new Response('모든 방이 꽉 찼어요', { status: 503 });
   },
@@ -42,6 +48,7 @@ function withRoom(request, room) {
 export class Room extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
+    this.rate = new Map(); // 연결별 메시지 수 (메모리, 잠들면 초기화돼도 괜찮음)
     // 연결 유지용 ping 은 Durable Object 를 깨우지 않고 자동 응답
     this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
   }
@@ -56,6 +63,11 @@ export class Room extends DurableObject {
   }
 
   async webSocketMessage(ws, raw) {
+    // 도배 방지: 비정상적으로 많이 보내는 연결은 끊어요
+    const now = Date.now(), r = this.rate.get(ws) || { t: now, n: 0 };
+    if (now - r.t > RATE_WINDOW) { r.t = now; r.n = 0; }
+    r.n++; this.rate.set(ws, r);
+    if (r.n > RATE_MAX) { this.rate.delete(ws); try { ws.close(4008, 'too many messages'); } catch { } this.leave(ws); return; }
     if (typeof raw !== 'string' || raw.length > MAX_MSG) return;
     let m;
     try { m = JSON.parse(raw); } catch { return; }
@@ -99,6 +111,7 @@ export class Room extends DurableObject {
   }
 
   leave(ws) {
+    this.rate.delete(ws);
     const a = ws.deserializeAttachment();
     if (a?.name) this.broadcast({ t: 'leave', id: a.id }, ws);
     this.broadcastCount(ws);

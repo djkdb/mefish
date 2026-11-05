@@ -1442,6 +1442,10 @@ const ICON = {
 $('place').textContent = `찌멍 · ${PL.title}`;
 document.title = `찌멍 · ${PL.title}`;
 let toastTimer = 0;
+// 기록 카드가 떠 있는 동안 생긴 알림(레벨 업·순위)은 카드를 닫은 뒤에 차례로 보여줘요 (사진·물고기를 가리지 않게)
+const afterCard = [];
+function whenCardClosed(fn) { if (F.state === 'caught' || !catchModal.classList.contains('hidden')) afterCard.push(fn); else fn(); }
+function flushAfterCard() { afterCard.splice(0).forEach((fn, i) => setTimeout(fn, 350 + i * 1800)); }
 function toast(html, dur = 2.2) { toastEl.innerHTML = html; toastEl.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.style.opacity = 0, dur * 1000); }
 function setStatus(t) { statusEl.style.display = t ? 'block' : 'none'; if (statusEl.textContent !== (t || '')) statusEl.textContent = t || ''; }
 function setAct(label, cls = '') { if (!label) { actEl.style.display = 'none'; return; } actEl.style.display = 'block'; if (actEl.textContent !== label) actEl.textContent = label; if (actEl.className !== cls) actEl.className = cls; }
@@ -1805,7 +1809,7 @@ function addXP(n) {
   if (b > a) {
     const t = TITLES.filter(t => !t.flag && t.lv > a && t.lv <= b).pop(), un = [];
     COS_KEYS.forEach(k => COS[k].list.forEach(([, req]) => { if (typeof req === 'number' && req > a && req <= b) un.push(COS[k].name); }));
-    setTimeout(() => { sfx.levelup(); haptic([40, 60, 40, 60, 120]); showBanner(`Lv.${b} 달성`, `${t ? `새 칭호 '${t.name}'` : '레벨 업'}${un.length ? ` · ${[...new Set(un)].join(' · ')} 열림` : ''}`, 'lv'); }, 900);
+    setTimeout(() => whenCardClosed(() => { sfx.levelup(); haptic([40, 60, 40, 60, 120]); showBanner(`Lv.${b} 달성`, `${t ? `새 칭호 '${t.name}'` : '레벨 업'}${un.length ? ` · ${[...new Set(un)].join(' · ')} 열림` : ''}`, 'lv'); }), 900);
   }
   refreshMe();
 }
@@ -1931,7 +1935,7 @@ async function postBoard(kind, v, x = '') {
   try {
     const r = await fetch('/board', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ site: PLACE_ID, kind, id: PID, name: ME.name, v, x }) });
     if (!r.ok) return; const j = await r.json(); st[kind] = v;
-    if (j.me && j.me.rank <= 10 && (!st['r_' + kind] || j.me.rank < st['r_' + kind])) toast(`오늘 ${j.me.rank}위!<small>${BOARD.find(b => b[0] === kind)[1]} · ${fmtBoard(kind, v)}</small>`, 3);
+    if (j.me && j.me.rank <= 10 && (!st['r_' + kind] || j.me.rank < st['r_' + kind])) whenCardClosed(() => toast(`오늘 ${j.me.rank}위!<small>${BOARD.find(b => b[0] === kind)[1]} · ${fmtBoard(kind, v)}</small>`, 3));
     if (j.me) st['r_' + kind] = j.me.rank; saveProg();
   } catch (e) { }
 }
@@ -2176,6 +2180,7 @@ function standUp() {
 }
 function releaseFish() {
   catchModal.classList.add('hidden');
+  setTimeout(flushAfterCard, 0); // 상태가 바뀐 뒤 알림 표시
   if (F.fish) { const p = F.fish.position; splash(p.x, F.spot.waterY, p.z, 10, 0.7); sfx.splash(0.5); scene.remove(F.fish); F.fish = null; }
   if (F.state === 'caught') { F.state = 'ready'; line.visible = false; bobber.visible = false; }
 }
@@ -2868,7 +2873,7 @@ if (WEB && 'serviceWorker' in navigator) addEventListener('load', () => navigato
 if (document.fonts) document.fonts.load('800 40px "Pretendard Variable"').catch(() => { });
 
 // 테스트·디버그용
-window.__jjimeong = { camProbe: (yaw, pitch) => { camYaw = yaw; camPitch = pitch; blkAcc = 9; updateCamera(10); const c = camera.position, head = new THREE.Vector3(P.pos.x, P.pos.y + 1.65, P.pos.z), d = c.clone().sub(head), len = d.length();
+window.__jjimeong = { camBench: n => { const t0 = performance.now(); for (let i = 0; i < n; i++) { blkAcc = i % 25 === 0 ? 9 : 0; updateCamera(0.016); } return (performance.now() - t0) / n; }, camProbe: (yaw, pitch) => { camYaw = yaw; camPitch = pitch; blkAcc = 9; updateCamera(10); const c = camera.position, head = new THREE.Vector3(P.pos.x, P.pos.y + 1.65, P.pos.z), d = c.clone().sub(head), len = d.length();
     const rc = new THREE.Raycaster(head, d.normalize(), 0.05, len); rc.camera = camera; const hits = rc.intersectObjects(scene.children, true).filter(h => { let o = h.object; if (o.isSprite || o.isPoints || o.isLine || o.isLineSegments) return false; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (!m || m.transparent || m.visible === false || !o.visible) return false; while (o) { if (o === player.root) return false; o = o.parent; } return true; });
     return { pos: c.toArray().map(v => +v.toFixed(2)), dist: +len.toFixed(2), inside: nearBlk.filter(o => !o.thin && blkAt(o, c.x, c.y, c.z) && !blkAt(o, head.x, head.y, head.z)).map(o => Object.keys(o)[0] + (o.fade || '')).join(','), headIn: nearBlk.some(o => !o.under && blkAt(o, head.x, head.y, head.z)), floor: +camFloor(c.x, c.z).toFixed(2), hits: hits.slice(0, 3).map(h => (h.object.geometry?.type || '?') + (h.object.geometry?.parameters ? JSON.stringify(Object.values(h.object.geometry.parameters).slice(0, 3).map(v => +(+v).toFixed(2))) : '') + '@' + h.distance.toFixed(1) + '[' + h.point.toArray().map(v => v.toFixed(1)) + ']'), fade: Object.keys(camFade).filter(k => camFade[k].hit).join(',') }; },
   camInfo: () => ({ fov: camera.fov, k: camFit.k, pos: camera.position.toArray().map(v => +v.toFixed(2)), blocked: !!camBlocked(camera.position.x, camera.position.y, camera.position.z), fade: [camFade.roof.a, camFade.pav.a] }), bobScreen: () => { const v = bobber.position.clone(); v.y += WATERLINE * PL.bobScale; v.project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, get T() { return T; }, setCamYaw: y => { camYaw = y; }, get wx() { return env.wx; }, fight, get prog() { return prog; }, addXP, levelInfo, todaysMissions, missionState, missionEvent, weatherAt, weatherWindows, BOSS, BAITS, bait, cycleBait, boardState, PID, rollSpecies, rollLen, openRanking, openStyle, get together() { return together; }, setBait: i => { baitI = i; updateBaitChip(); }, dbg: { inLake, inIsland, dockRects, inRect, obstacles, seatTaken, LAKE }, F, P, spots, npcs, onAct, env, remotes, net, ME, dynHoles, sled, QUAL, SLED, ISLAND, store, renderCard, renderStory, dexPhoto, shareStory, openTut, openMenu, openDex, openHelp,

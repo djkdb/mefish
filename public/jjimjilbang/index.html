@@ -289,7 +289,21 @@ const SUITS = [
 ];
 const suit = i => SUITS[(i | 0) % SUITS.length];
 const collarGeo = new THREE.BoxGeometry(1, 0.05, 0.016);
-const neckGeo = new THREE.TorusGeometry(0.155, 0.02, 6, 24);
+const neckGeo = new THREE.TorusGeometry(0.15, 0.022, 6, 20, Math.PI); // 목 뒤쪽 반원 깃
+// V넥 안쪽 맨살: 몸통 곡면을 따라 휘어지는 삼각형 (위 가장자리 = 목선, 꼭짓점 = 깃이 만나는 곳)
+const vSkinGeo = (() => {
+  const top = 1.16, tipX = 0.025, tipY = 0.965, half = 0.112, N = 8, pos = [], idx = [];
+  const surf = (x, y) => { const r = 0.25 + (0.21 - 0.25) * ((y - 0.59) / 0.58); return Math.sqrt(Math.max(0, r * r - x * x)) + 0.004; };
+  for (let i = 0; i <= N; i++) {               // i=0 목선, i=N 꼭짓점
+    const t = i / N, y = top + (tipY - top) * t, xl = -half + (tipX + half) * t, xr = half + (tipX - half) * t;
+    for (let j = 0; j <= N - i; j++) { const u = N - i === 0 ? 0 : j / (N - i), x = xl + (xr - xl) * u; pos.push(x, y, surf(x, y)); }
+  }
+  let a = 0;
+  for (let i = 0; i < N; i++) { const n = N - i, b = a + n + 1;
+    for (let j = 0; j < n; j++) { idx.push(a + j, b + j, a + j + 1); if (j < n - 1) idx.push(a + j + 1, b + j, b + j + 1); }
+    a = b; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+})();
 const matCache = new Map();
 function lam(color) {
   if (!matCache.has(color)) matCache.set(color, new THREE.MeshLambertMaterial({ color }));
@@ -310,6 +324,7 @@ function makeCharacter(o) {
   add(GEO.torso, shirtMat, 0, 0.88, 0);
   if (o.trim) { // 교차 V넥 깃: 오른쪽 어깨 → 왼쪽 가슴 아래로 깊게, 왼쪽 깃은 가운데에서 만남
     const tm = lam(o.trim);
+    const vs = new THREE.Mesh(vSkinGeo, skinMat); vs.material.side = THREE.DoubleSide; body.add(vs);
     const band = (x1, y1, x2, y2) => {
       const len = Math.hypot(x2 - x1, y2 - y1), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
       const rr = 0.25 + (0.21 - 0.25) * ((my - 0.59) / 0.58);
@@ -318,7 +333,7 @@ function makeCharacter(o) {
     };
     band(-0.115, 1.155, 0.035, 0.95); // 깊게 내려가는 깃(위에 겹침)
     band(0.115, 1.155, 0.015, 0.975); // 반대쪽 깃 — 아래에서 만나 V자
-    const n = add(neckGeo, tm, 0, 1.165, -0.01); n.rotation.x = Math.PI / 2; n.scale.set(1, 0.92, 1);
+    const n = add(neckGeo, tm, 0, 1.165, -0.01); n.rotation.x = -Math.PI / 2; n.scale.set(0.8, 0.95, 1);
   }
   add(GEO.hip, shortsMat, 0, 0.62, 0);
   const legs = [];

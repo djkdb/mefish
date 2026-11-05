@@ -1,11 +1,11 @@
 // 찌멍 · 찜멍 실시간 서버
-// - Worker 하나가 화면 파일(public/)과 실시간 연결(/ws)을 함께 맡아요.
+// - Worker 하나가 화면 파일(sites/<이름>/)과 실시간 연결(/ws)을 함께 맡아요.
+//   찌멍(jjimeong)과 찜멍(jjimmung)은 같은 서버 코드로 따로 배포해요 (wrangler.<이름>.jsonc).
 // - 방 하나 = Durable Object 하나. WebSocket Hibernation API를 써서
 //   아무도 말을 안 보낼 때는 잠들어 있어요(무료 플랜 친화적).
 // - 한 방에 30명이 차면 다음 방으로 자동 배정. ?room=이름 이면 그 방으로.
 import { DurableObject } from 'cloudflare:workers';
 
-const SITES = new Set(['lake', 'ice', 'jjim']);
 const CAP = 30;
 const MAX_AUTO_ROOMS = 50;
 const MAX_MSG = 1500;
@@ -15,10 +15,15 @@ const RATE_WINDOW = 5000, RATE_MAX = 60; // 5초에 60개(초당 12개) 넘게 �
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // 예전 주소(하나로 합쳐져 있던 시절) → 새 주소로 안내
+    if (url.pathname.startsWith('/fishing')) return Response.redirect(new URL('/' + url.search, url), 301);
+    if (url.pathname.startsWith('/jjimjilbang') && env.JJIM_URL) return Response.redirect(env.JJIM_URL, 301);
     if (url.pathname !== '/ws') return env.ASSETS.fetch(request);
     if (request.headers.get('Upgrade') !== 'websocket') return new Response('WebSocket 전용 주소예요', { status: 426 });
 
-    const site = SITES.has(url.searchParams.get('site')) ? url.searchParams.get('site') : 'lake';
+    // 이 Worker 가 맡는 장소들 (wrangler 설정의 vars.SITES)
+    const sites = String(env.SITES || 'lake').split(',');
+    const site = sites.includes(url.searchParams.get('site')) ? url.searchParams.get('site') : sites[0];
     const named = (url.searchParams.get('room') || '').normalize('NFC').replace(/[^\p{L}\p{N}_-]/gu, '').slice(0, 24);
 
     if (named) {

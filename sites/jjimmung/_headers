@@ -1,0 +1,10 @@
+# 홈 화면 앱(PWA)이 새 버전을 바로 받도록: 화면 파일과 서비스워커는 매번 확인
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: no-cache
